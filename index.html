@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0E0E0F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="我的生活 OS">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="我的生活 OS">
+  <meta name="description" content="一个为认真生活的人打造的个人操作系统。管理待办、记录生活、规划财富、追踪周期、记录灵感。">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+
+<title>我的生活 OS · Life Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0E0E0F;
+    --bg-2: #16161A;
+    --card: #F8F5EE;
+    --card-2: #1C1C20;
+    --yellow: #DFFF00;
+    --yellow-deep: #C4E600;
+    --purple: #8B5CF6;
+    --purple-soft: rgba(139,92,246,0.16);
+    --text: #F8F5EE;
+    --text-sub: #9A9AA2;
+    --text-dim: #6B6B72;
+    --line: rgba(255,255,255,0.07);
+  }
+  html, body {
+    font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+    background: #050506;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+
+  /* ============ iPhone 14 Pro Frame ============ */
+  .iphone {
+    position: relative;
+    width: 393px;
+    height: 852px;
+    background: #000;
+    border-radius: 56px;
+    padding: 12px;
+    box-shadow:
+      0 0 0 2px #2a2a2c,
+      0 0 0 14px #0a0a0b,
+      0 50px 90px -20px rgba(223,255,0,0.08),
+      0 30px 70px -10px rgba(0,0,0,0.85);
+    flex-shrink: 0;
+  }
+  .screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(165deg, #141416 0%, #0E0E10 45%, #111114 100%);
+    border-radius: 44px;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  /* ambient glow */
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    z-index: 0;
+    pointer-events: none;
+  }
+  .glow-y {
+    width: 240px; height: 240px;
+    background: rgba(223,255,0,0.22);
+    top: -60px; right: -70px;
+  }
+  .glow-p {
+    width: 200px; height: 200px;
+    background: rgba(139,92,246,0.28);
+    top: 180px; left: -80px;
+  }
+  .glow-y2 {
+    width: 180px; height: 180px;
+    background: rgba(223,255,0,0.10);
+    bottom: 120px; right: -60px;
+  }
+
+  /* Dynamic Island */
+  .island {
+    position: absolute;
+    top: 11px; left: 50%;
+    transform: translateX(-50%);
+    width: 125px; height: 37px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 100;
+  }
+
+  /* Status bar */
+  .statusbar {
+    position: relative;
+    z-index: 50;
+    height: 54px;
+    padding: 0 28px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .statusbar .icons { display:flex; align-items:center; gap:6px; }
+  .statusbar svg { display:block; }
+
+  /* Scroll area */
+  .content {
+    position: relative;
+    z-index: 10;
+    height: calc(100% - 54px - 96px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px 20px 24px;
+    scrollbar-width: none;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* ============ Hero Header ============ */
+  .hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-top: 6px;
+  }
+  .hero-left { flex: 1; }
+  .greeting {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--yellow);
+    background: rgba(223,255,0,0.08);
+    border: 1px solid rgba(223,255,0,0.22);
+    padding: 6px 12px;
+    border-radius: 100px;
+    margin-bottom: 14px;
+  }
+  .greeting .dot {
+    width: 6px; height: 6px;
+    background: var(--yellow);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--yellow);
+  }
+  .hero h1 {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .hero h1 .accent {
+    color: var(--yellow);
+    font-style: italic;
+    font-weight: 800;
+  }
+  .hero .sub {
+    font-size: 13px;
+    color: var(--text-sub);
+    font-weight: 400;
+    letter-spacing: 0.3px;
+  }
+  /* decoration ring */
+  .deco {
+    position: relative;
+    width: 56px; height: 56px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .deco .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid;
+  }
+  .deco .r1 { inset: 0; border-color: rgba(223,255,0,0.5); }
+  .deco .r2 {
+    inset: 10px;
+    border-color: rgba(139,92,246,0.6);
+    border-style: dashed;
+  }
+  .deco .core {
+    position: absolute;
+    inset: 20px;
+    background: linear-gradient(135deg, var(--yellow), var(--purple));
+    border-radius: 50%;
+    box-shadow: 0 0 16px rgba(223,255,0,0.5);
+  }
+  .deco .orbit {
+    position: absolute;
+    width: 8px; height: 8px;
+    background: var(--yellow);
+    border-radius: 50%;
+    top: -2px; left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px var(--yellow);
+  }
+  /* notification btn */
+  .notif {
+    position: absolute;
+    top: 4px; right: 0;
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+  .notif .badge {
+    position: absolute;
+    top: 10px; right: 11px;
+    width: 8px; height: 8px;
+    background: var(--yellow);
+    border-radius: 50%;
+    border: 2px solid #0E0E10;
+  }
+
+  /* ============ Today Status Card ============ */
+  .status-card {
+    margin-top: 22px;
+    background: linear-gradient(135deg, #DFFF00 0%, #C4E600 100%);
+    border-radius: 28px;
+    padding: 22px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 30px -10px rgba(223,255,0,0.4);
+  }
+  .status-card::before {
+    content: '';
+    position: absolute;
+    width: 140px; height: 140px;
+    background: rgba(139,92,246,0.25);
+    border-radius: 50%;
+    top: -50px; right: -30px;
+    filter: blur(20px);
+  }
+  .status-card::after {
+    content: '';
+    position: absolute;
+    width: 60px; height: 60px;
+    border: 2px solid rgba(0,0,0,0.08);
+    border-radius: 50%;
+    bottom: -30px; left: 40%;
+  }
+  .status-left { position: relative; z-index: 2; flex: 1; }
+  .status-date {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0E0E10;
+    opacity: 0.7;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .status-text {
+    font-size: 19px;
+    font-weight: 800;
+    color: #0E0E10;
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+  }
+  .energy {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .energy-ring {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: conic-gradient(#0E0E10 78%, rgba(14,14,16,0.15) 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .energy-ring::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    background: var(--yellow);
+    border-radius: 50%;
+  }
+  .energy-ring span {
+    position: relative;
+    font-size: 18px;
+    font-weight: 800;
+    color: #0E0E10;
+  }
+  .energy-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #0E0E10;
+    opacity: 0.7;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ============ Section ============ */
+  .section { margin-top: 26px; }
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 0 2px;
+  }
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .bar {
+    width: 3px; height: 14px;
+    background: var(--yellow);
+    border-radius: 2px;
+  }
+  .section-more {
+    font-size: 12px;
+    color: var(--text-sub);
+    font-weight: 500;
+  }
+
+  /* Plan cards horizontal scroll */
+  .plans {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    margin: 0 -20px;
+    padding: 2px 20px 4px;
+    scrollbar-width: none;
+  }
+  .plans::-webkit-scrollbar { display: none; }
+  .plan-card {
+    flex: 0 0 200px;
+    background: var(--card);
+    border-radius: 20px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .plan-card.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; }
+  .plan-card.purple .plan-name { color: #fff; }
+  .plan-card.purple .plan-meta { color: rgba(255,255,255,0.75); }
+  .plan-card.purple .plan-track { background: rgba(255,255,255,0.22); }
+  .plan-card.purple .plan-fill { background: var(--yellow); }
+  .plan-card.purple .tag { background: rgba(255,255,255,0.18); color: #fff; }
+
+  .plan-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .plan-ico {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    background: rgba(14,14,16,0.08);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .plan-card.purple .plan-ico { background: rgba(255,255,255,0.16); }
+  .tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 100px;
+    background: rgba(14,14,16,0.08);
+    color: #0E0E10;
+    letter-spacing: 0.3px;
+  }
+  .plan-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0E0E10;
+    margin-bottom: 4px;
+    letter-spacing: -0.2px;
+  }
+  .plan-meta {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .plan-card.purple .plan-meta { color: rgba(255,255,255,0.7); }
+  .plan-track {
+    height: 6px;
+    background: rgba(14,14,16,0.1);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .plan-fill {
+    height: 100%;
+    background: #0E0E10;
+    border-radius: 100px;
+  }
+  .plan-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .plan-pct {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0E0E10;
+  }
+  .plan-card.purple .plan-pct { color: var(--yellow); }
+  .plan-btn {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .plan-card.purple .plan-btn { background: var(--yellow); }
+  .plan-card .plan-btn-2 { background: var(--purple); }
+  .plan-card.purple .plan-btn-2 { background: #0E0E10; }
+
+  /* ============ Grid ============ */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .gcard {
+    background: var(--card-2);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    min-height: 112px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .gcard.light {
+    background: var(--card);
+    color: #0E0E10;
+    border: none;
+  }
+  .gcard.yellow {
+    background: linear-gradient(140deg, #DFFF00 0%, #C4E600 100%);
+    color: #0E0E10;
+    border: none;
+  }
+  .gcard.purple {
+    background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%);
+    color: #fff;
+    border: none;
+  }
+  .gico {
+    width: 36px; height: 36px;
+    border-radius: 11px;
+    background: rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+  }
+  .gcard.light .gico { background: rgba(14,14,16,0.07); }
+  .gcard.yellow .gico { background: rgba(14,14,16,0.1); }
+  .gcard.purple .gico { background: rgba(255,255,255,0.18); }
+  .gtitle {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    margin-bottom: 2px;
+  }
+  .gdesc {
+    font-size: 10.5px;
+    color: var(--text-sub);
+    font-weight: 500;
+    line-height: 1.35;
+  }
+  .gcard.light .gdesc { color: rgba(14,14,16,0.55); }
+  .gcard.yellow .gdesc { color: rgba(14,14,16,0.6); }
+  .gcard.purple .gdesc { color: rgba(255,255,255,0.78); }
+  .gcard .corner {
+    position: absolute;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    top: -20px; right: -20px;
+    background: rgba(255,255,255,0.05);
+  }
+  .gcard.yellow .corner { background: rgba(14,14,16,0.08); }
+  .gcard.purple .corner { background: rgba(255,255,255,0.12); }
+  .gcard .mini {
+    position: absolute;
+    bottom: 12px; right: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+  .gcard.light .mini { color: rgba(14,14,16,0.4); }
+  .gcard.yellow .mini { color: rgba(14,14,16,0.5); }
+  .gcard.purple .mini { color: rgba(255,255,255,0.6); }
+
+  /* ============ Tab Bar ============ */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 96px;
+    background: rgba(14,14,16,0.82);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding: 12px 16px 0;
+    z-index: 90;
+  }
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 600;
+    padding-top: 6px;
+  }
+  .tab.active { color: var(--yellow); }
+  .tab-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 0;
+  }
+  .tab-plus {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--yellow-deep) 100%);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: -18px;
+    box-shadow: 0 8px 20px -4px rgba(223,255,0,0.5), 0 0 0 6px rgba(14,14,16,0.9);
+  }
+  .home-indicator {
+    position: absolute;
+    bottom: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 134px; height: 5px;
+    background: var(--text);
+    border-radius: 100px;
+    opacity: 0.9;
+    z-index: 95;
+  }
+
+  /* small fade-in */
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero { animation: rise .5s ease both; }
+  .status-card { animation: rise .55s .05s ease both; }
+  .section:nth-of-type(1) { animation: rise .55s .1s ease both; }
+  .section:nth-of-type(2) { animation: rise .55s .15s ease both; }
+</style>
+<script src="theme-inline.js"></script>
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+</head>
+<body>
+<div class="iphone">
+  <div class="screen">
+    <div class="glow glow-y"></div>
+    <div class="glow glow-p"></div>
+    <div class="glow glow-y2"></div>
+    <div class="island"></div>
+
+    <!-- Status Bar -->
+    <div class="statusbar">
+      <span>21:20</span>
+      <div class="icons">
+        <!-- signal -->
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+        <!-- wifi -->
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+        <!-- battery -->
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Hero Header -->
+      <div class="hero">
+        <div class="hero-left">
+          <div class="greeting"><span class="dot"></span>Hi，今天也要加油！</div>
+          <h1>我的<span class="accent">生活</span> OS</h1>
+          <div class="sub">认真生活 · 快乐记录 · 自在成长</div>
+        </div>
+        <div style="position:relative;width:56px;">
+          <div class="deco">
+            <div class="ring r1"></div>
+            <div class="ring r2"></div>
+            <div class="core"></div>
+            <div class="orbit"></div>
+          </div>
+          <div class="notif">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8F5EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+            <div class="badge"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today Status -->
+      <div class="status-card">
+        <div class="status-left">
+          <div class="status-date">8月1日 · 周六</div>
+          <div class="status-text">今天也是<br>闪闪发光的一天</div>
+        </div>
+        <div class="energy">
+          <div class="energy-ring"><span>78%</span></div>
+          <div class="energy-label">今日能量</div>
+        </div>
+      </div>
+
+      <!-- Today Plans -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>今日计划</div>
+          <div class="section-more">全部 ›</div>
+        </div>
+        <div class="plans" id="todayPlans">
+          <div class="plan-card">
+            <div class="plan-top">
+              <div class="plan-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 12h11M6.5 17.5h11"/><circle cx="3" cy="6.5" r="1" fill="#0E0E10"/><circle cx="3" cy="12" r="1" fill="#0E0E10"/><circle cx="3" cy="17.5" r="1" fill="#0E0E10"/></svg>
+              </div>
+              <div class="tag">进行中</div>
+            </div>
+            <div class="plan-name">完成健身计划</div>
+            <div class="plan-meta">上肢训练 · 45分钟</div>
+            <div class="plan-track"><div class="plan-fill" style="width:65%"></div></div>
+            <div class="plan-foot">
+              <div class="plan-pct">65%</div>
+              <div class="plan-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="plan-card purple">
+            <div class="plan-top">
+              <div class="plan-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l10-4 10 4-10 4-10-4z"/><path d="M2 12l10 4 10-4"/><path d="M2 17l10 4 10-4"/></svg>
+              </div>
+              <div class="tag">学习中</div>
+            </div>
+            <div class="plan-name">学习新技能 30min</div>
+            <div class="plan-meta">设计思维 · 第3节</div>
+            <div class="plan-track"><div class="plan-fill" style="width:40%"></div></div>
+            <div class="plan-foot">
+              <div class="plan-pct">40%</div>
+              <div class="plan-btn plan-btn-2">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="plan-card">
+            <div class="plan-top">
+              <div class="plan-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+              </div>
+              <div class="tag">待开始</div>
+            </div>
+            <div class="plan-name">阅读 20 页</div>
+            <div class="plan-meta">《心流》· 第5章</div>
+            <div class="plan-track"><div class="plan-fill" style="width:0%"></div></div>
+            <div class="plan-foot">
+              <div class="plan-pct">0%</div>
+              <div class="plan-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core Management Grid -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>核心管理</div>
+          <div class="section-more">编辑</div>
+        </div>
+        <div class="grid">
+          <!-- 1 我的伙伴 -->
+          <div class="gcard yellow">
+            <div class="corner"></div>
+            <div class="gico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            </div>
+            <div>
+              <div class="gtitle">我的伙伴</div>
+              <div class="gdesc">5 位同行者在线</div>
+            </div>
+            <div class="mini">›</div>
+          </div>
+          <!-- 2 财富规划 -->
+          <div class="gcard light">
+            <div class="corner"></div>
+            <div class="gico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <div>
+              <div class="gtitle">财富规划</div>
+              <div class="gdesc">本月支出 ¥4,280</div>
+            </div>
+            <div class="mini">›</div>
+          </div>
+          <!-- 3 购物清单 -->
+          <div class="gcard">
+            <div class="corner"></div>
+            <div class="gico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DFFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </div>
+            <div>
+              <div class="gtitle">购物清单</div>
+              <div class="gdesc">8 件待买 · 3 件已完成</div>
+            </div>
+            <div class="mini">›</div>
+          </div>
+          <!-- 4 随心记录 -->
+          <div class="gcard purple">
+            <div class="corner"></div>
+            <div class="gico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+            </div>
+            <div>
+              <div class="gtitle">随心记录</div>
+              <div class="gdesc">今日已记 3 条心情</div>
+            </div>
+            <div class="mini">›</div>
+          </div>
+          <!-- 5 身体状态 -->
+          <div class="gcard light">
+            <div class="corner"></div>
+            <div class="gico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div>
+              <div class="gtitle">身体状态</div>
+              <div class="gdesc">心率 72 · 睡眠 7.5h</div>
+            </div>
+            <div class="mini">›</div>
+          </div>
+          <!-- 6 资料库 -->
+          <div class="gcard">
+            <div class="corner"></div>
+            <div class="gico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8F5EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            </div>
+            <div>
+              <div class="gtitle">资料库</div>
+              <div class="gdesc">128 篇收藏待读</div>
+            </div>
+            <div class="mini">›</div>
+          </div>
+          <!-- 7 习惯追踪 -->
+          <div class="gcard">
+            <div class="corner"></div>
+            <div class="gico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div>
+              <div class="gtitle">习惯追踪</div>
+              <div class="gdesc">连续打卡 21 天</div>
+            </div>
+            <div class="mini">›</div>
+          </div>
+          <!-- 8 数据统计 -->
+          <div class="gcard">
+            <div class="corner"></div>
+            <div class="gico">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DFFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <div>
+              <div class="gtitle">数据统计</div>
+              <div class="gdesc">本周成长 +12%</div>
+            </div>
+            <div class="mini">›</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tabbar">
+      <div class="tab active">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>首页</span>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span>任务</span>
+      </div>
+      <div class="tab-center">
+        <div class="tab-plus">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>记录</span>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>我的</span>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+</div>
+<script src="theme-runtime.js"></script>
+<script src="storage.js"></script>
+<script src="pwa.js"></script>
+<script>
+(function () {
+  'use strict';
+  if (!window.LifeOS) return;
+
+  // ============ 动态渲染今日计划 ============
+  var todos = LifeOS.get('todos') || [];
+  var container = document.getElementById('todayPlans');
+  if (!container || !todos.length) return;
+
+  // 分类图标和颜色映射
+  var catConfig = {
+    health: { icon: '<path d="M6.5 6.5h11M6.5 12h11M6.5 17.5h11"/><circle cx="3" cy="6.5" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="17.5" r="1"/>', purple: false },
+    study:  { icon: '<path d="M2 7l10-4 10 4-10 4-2-4z"/><path d="M2 12l10 4 10-4"/><path d="M2 17l10 4 10-4"/>', purple: true },
+    life:   { icon: '<path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/>', purple: false },
+    work:   { icon: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>', purple: false }
+  };
+
+  var statusConfig = {
+    progress: { tag: '进行中', pct: 65 },
+    done:     { tag: '已完成', pct: 100 },
+    todo:     { tag: '待开始', pct: 0 },
+    pending:  { tag: '待开始', pct: 0 }
+  };
+
+  // 最多展示 4 条
+  var display = todos.slice(0, 4);
+  var html = display.map(function (t) {
+    var cat = catConfig[t.cat] || catConfig.life;
+    var st = statusConfig[t.status] || statusConfig.todo;
+    var cardClass = cat.purple ? 'plan-card purple' : 'plan-card';
+    var strokeColor = cat.purple ? '#fff' : '#0E0E10';
+    var pct = t.status === 'done' ? 100 : (t.status === 'progress' ? 65 : 0);
+    var meta = t.note || t.deadline || '';
+    var btnIcon = t.status === 'done'
+      ? '<polyline points="20 6 9 17 4 12"/>'
+      : (t.status === 'progress'
+          ? '<polyline points="9 18 15 12 9 6"/>'
+          : '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>');
+
+    return '<div class="' + cardClass + '">' +
+      '<div class="plan-top">' +
+        '<div class="plan-ico">' +
+          '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + strokeColor + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + cat.icon + '</svg>' +
+        '</div>' +
+        '<div class="tag">' + st.tag + '</div>' +
+      '</div>' +
+      '<div class="plan-name">' + escapeHtml(t.name) + '</div>' +
+      '<div class="plan-meta">' + escapeHtml(meta) + '</div>' +
+      '<div class="plan-track"><div class="plan-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="plan-foot">' +
+        '<div class="plan-pct">' + pct + '%</div>' +
+        '<div class="plan-btn' + (cat.purple ? ' plan-btn-2' : '') + '">' +
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' + btnIcon + '</svg>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  container.innerHTML = html;
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+})();
+</script>
+</body>
+</html>
