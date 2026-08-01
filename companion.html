@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0E0E0F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="我的生活 OS">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="我的生活 OS">
+  <meta name="description" content="一个为认真生活的人打造的个人操作系统。管理待办、记录生活、规划财富、追踪周期、记录灵感。">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+
+<title>我的伙伴 · 我的生活 OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     设计系统（锁定规范）
+     ============================================================ */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0E0E0F; --bg-2: #16161A;
+    --card: #F8F5EE; --card-2: #1C1C20;
+    --yellow: #DFFF00; --yellow-deep: #C4E600;
+    --purple: #8B5CF6; --purple-deep: #7C3AED;
+    --purple-soft: rgba(139,92,246,0.16);
+    --text: #F8F5EE; --text-sub: #9A9AA2; --text-dim: #6B6B72;
+    --line: rgba(255,255,255,0.07);
+    --r-lg: 28px; --r-md: 20px; --r-sm: 12px;
+  }
+  html, body {
+    font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+    background: #050506; color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 32px 16px;
+  }
+
+  /* ============ iPhone Frame ============ */
+  .iphone {
+    position: relative; width: 393px; height: 852px;
+    background: #000; border-radius: 56px; padding: 12px;
+    box-shadow: 0 0 0 2px #2a2a2c, 0 0 0 14px #0a0a0b,
+      0 50px 90px -20px rgba(223,255,0,0.08), 0 30px 70px -10px rgba(0,0,0,0.85);
+    flex-shrink: 0;
+  }
+  .screen {
+    position: relative; width: 100%; height: 100%;
+    background: linear-gradient(165deg, #141416 0%, #0E0E10 45%, #111114 100%);
+    border-radius: 44px; overflow: hidden; isolation: isolate;
+  }
+  .glow { position: absolute; border-radius: 50%; filter: blur(70px); z-index: 0; pointer-events: none; }
+  .glow-y { width: 240px; height: 240px; background: rgba(223,255,0,0.18); top: -60px; right: -70px; }
+  .glow-p { width: 220px; height: 220px; background: rgba(139,92,246,0.30); top: 120px; left: -90px; }
+  .glow-y2 { width: 180px; height: 180px; background: rgba(223,255,0,0.08); bottom: 140px; right: -60px; }
+
+  .island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 125px; height: 37px; background: #000; border-radius: 20px; z-index: 100; }
+
+  .statusbar {
+    position: relative; z-index: 50; height: 54px; padding: 0 28px 6px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .statusbar .icons { display:flex; align-items:center; gap:6px; }
+  .statusbar svg { display:block; }
+
+  .content {
+    position: relative; z-index: 10;
+    height: calc(100% - 54px - 96px);
+    overflow-y: auto; overflow-x: hidden;
+    padding: 4px 20px 24px; scrollbar-width: none;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* ============ 通用 ============ */
+  .page-head { padding: 8px 2px 0; }
+  .page-title { font-size: 30px; font-weight: 800; line-height: 1.1; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .page-title .accent { color: var(--yellow); font-style: italic; }
+  .page-sub { font-size: 13px; color: var(--text-sub); font-weight: 400; letter-spacing: 0.3px; }
+
+  .section { margin-top: 24px; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 0 2px; }
+  .section-title { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 8px; }
+  .section-title .bar { width: 3px; height: 14px; background: var(--yellow); border-radius: 2px; }
+  .section-more { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+
+  .tag { font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 100px; letter-spacing: 0.3px; display: inline-flex; align-items: center; gap: 4px; }
+
+  /* ============ 宠物档案卡 ============ */
+  .pet-card {
+    margin-top: 18px;
+    background: linear-gradient(145deg, #1C1C20 0%, #161619 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 22px 20px;
+    position: relative; overflow: hidden;
+  }
+  .pet-card::before {
+    content: ''; position: absolute; width: 180px; height: 180px;
+    background: rgba(139,92,246,0.22); border-radius: 50%;
+    top: -70px; right: -50px; filter: blur(30px);
+  }
+  .pet-card::after {
+    content: ''; position: absolute; width: 120px; height: 120px;
+    background: rgba(223,255,0,0.12); border-radius: 50%;
+    bottom: -40px; left: -30px; filter: blur(25px);
+  }
+  .pet-top {
+    display: flex; gap: 16px; align-items: center;
+    position: relative; z-index: 2;
+  }
+  .pet-avatar {
+    width: 78px; height: 78px; border-radius: 24px;
+    background: linear-gradient(135deg, var(--yellow), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px; flex-shrink: 0; position: relative;
+    box-shadow: 0 10px 24px -6px rgba(223,255,0,0.35);
+  }
+  .pet-avatar .status-dot {
+    position: absolute; bottom: -2px; right: -2px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--yellow); border: 3px solid #1C1C20;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pet-info { flex: 1; min-width: 0; }
+  .pet-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .pet-name { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+  .pet-gender { font-size: 14px; }
+  .pet-breed { font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 8px; }
+  .pet-mood {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(223,255,0,0.1); border: 1px solid rgba(223,255,0,0.2);
+    padding: 4px 10px; border-radius: 100px;
+    font-size: 11px; font-weight: 600; color: var(--yellow);
+  }
+
+  .pet-edit {
+    width: 36px; height: 36px; border-radius: 12px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 2; cursor: pointer;
+  }
+
+  .pet-stats {
+    display: flex; gap: 10px; margin-top: 18px;
+    position: relative; z-index: 2;
+  }
+  .ps {
+    flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    border-radius: 14px; padding: 12px 8px; text-align: center;
+  }
+  .ps .ico { font-size: 14px; margin-bottom: 4px; }
+  .ps .v { font-size: 15px; font-weight: 800; letter-spacing: -0.3px; }
+  .ps .l { font-size: 9.5px; color: var(--text-sub); font-weight: 500; margin-top: 1px; }
+
+  /* ============ 健康记录 ============ */
+  .health-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hcard {
+    border-radius: var(--r-md); padding: 16px;
+    position: relative; overflow: hidden; cursor: pointer;
+    min-height: 100px; display: flex; flex-direction: column; justify-content: space-between;
+    transition: transform .2s ease;
+  }
+  .hcard:active { transform: scale(0.97); }
+  .hcard.light { background: var(--card); color: #0E0E10; }
+  .hcard.yellow { background: linear-gradient(140deg, #DFFF00 0%, #C4E600 100%); color: #0E0E10; }
+  .hcard.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; }
+  .hcard.dark { background: var(--card-2); border: 1px solid var(--line); color: var(--text); }
+  .hcard-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .hcard-ico {
+    width: 36px; height: 36px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hcard.light .hcard-ico { background: rgba(14,14,16,0.07); }
+  .hcard.yellow .hcard-ico { background: rgba(14,14,16,0.1); }
+  .hcard.purple .hcard-ico { background: rgba(255,255,255,0.18); }
+  .hcard.dark .hcard-ico { background: rgba(255,255,255,0.08); }
+  .hcard-arrow { font-size: 16px; font-weight: 700; opacity: 0.35; }
+  .hcard-name { font-size: 14px; font-weight: 800; letter-spacing: -0.2px; margin-bottom: 2px; }
+  .hcard-desc { font-size: 10.5px; opacity: 0.65; font-weight: 500; }
+  .hcard-val { font-size: 11px; font-weight: 700; margin-top: 8px; opacity: 0.8; }
+
+  /* ============ 日常陪伴 ============ */
+  .companion-stack { display: flex; flex-direction: column; gap: 12px; }
+
+  /* 今日照片横滑 */
+  .photo-scroll {
+    display: flex; gap: 10px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px 4px; scrollbar-width: none;
+  }
+  .photo-scroll::-webkit-scrollbar { display: none; }
+  .photo-thumb {
+    flex: 0 0 110px; width: 110px; height: 130px;
+    border-radius: 16px; overflow: hidden; position: relative;
+    background: var(--card-2);
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-thumb .ptag {
+    position: absolute; bottom: 6px; left: 6px;
+    font-size: 9px; font-weight: 700; color: #fff;
+    background: rgba(0,0,0,0.5); padding: 3px 7px; border-radius: 100px;
+    backdrop-filter: blur(6px);
+  }
+  .photo-add {
+    flex: 0 0 110px; width: 110px; height: 130px;
+    border-radius: 16px; border: 1.5px dashed var(--line);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    color: var(--text-dim); font-size: 10px; font-weight: 600; cursor: pointer;
+  }
+
+  /* 喂食 + 玩耍 双卡 */
+  .duo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .duo-card {
+    border-radius: var(--r-md); padding: 16px; position: relative; overflow: hidden;
+  }
+  .duo-card.light { background: var(--card); color: #0E0E10; }
+  .duo-card.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; }
+  .duo-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .duo-emoji { font-size: 20px; }
+  .duo-name { font-size: 13px; font-weight: 800; letter-spacing: -0.1px; }
+  .duo-time { font-size: 10px; opacity: 0.6; font-weight: 600; margin-bottom: 8px; }
+  .duo-text { font-size: 12px; font-weight: 600; line-height: 1.4; opacity: 0.85; }
+  .duo-card .duo-foot {
+    display: flex; align-items: center; gap: 6px; margin-top: 10px;
+    font-size: 10px; font-weight: 700; opacity: 0.7;
+  }
+  .duo-btn {
+    margin-top: 10px; display: inline-flex; align-items: center; gap: 5px;
+    background: var(--yellow); color: #0E0E10;
+    font-size: 11px; font-weight: 700; padding: 7px 12px; border-radius: 100px;
+    cursor: pointer;
+  }
+  .duo-card.purple .duo-btn { background: rgba(255,255,255,0.18); color: #fff; }
+
+  /* 小记卡片 */
+  .note-card {
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: var(--r-md); padding: 16px;
+  }
+  .note-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .note-emoji { font-size: 18px; }
+  .note-title { font-size: 13px; font-weight: 700; }
+  .note-date { font-size: 10px; color: var(--text-dim); font-weight: 600; margin-left: auto; }
+  .note-text {
+    font-size: 13px; color: var(--text-sub); font-weight: 500; line-height: 1.55;
+  }
+  .note-text .highlight { color: var(--yellow); font-weight: 700; }
+
+  /* ============ 成长时间轴 ============ */
+  .timeline { position: relative; padding-left: 22px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px;
+    width: 2px; background: linear-gradient(to bottom, var(--yellow), var(--purple), var(--line));
+    border-radius: 2px;
+  }
+  .tl-item { position: relative; margin-bottom: 20px; }
+  .tl-item:last-child { margin-bottom: 0; }
+  .tl-dot {
+    position: absolute; left: -22px; top: 4px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--bg); border: 3px solid var(--yellow);
+    z-index: 2;
+  }
+  .tl-item:nth-child(2) .tl-dot { border-color: var(--purple); }
+  .tl-item:nth-child(3) .tl-dot { border-color: var(--text-dim); }
+
+  .tl-date {
+    font-size: 10px; font-weight: 700; color: var(--yellow);
+    letter-spacing: 0.5px; margin-bottom: 6px; text-transform: uppercase;
+  }
+  .tl-item:nth-child(2) .tl-date { color: var(--purple); }
+  .tl-item:nth-child(3) .tl-date { color: var(--text-sub); }
+
+  .tl-content {
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: var(--r-md); padding: 14px; overflow: hidden;
+  }
+  .tl-content.has-img { padding: 0; }
+  .tl-content.has-img .tl-img {
+    width: 100%; height: 130px; object-fit: cover; display: block;
+  }
+  .tl-content.has-img .tl-body { padding: 12px 14px 14px; }
+  .tl-text { font-size: 13px; font-weight: 600; line-height: 1.45; margin-bottom: 4px; }
+  .tl-sub { font-size: 11px; color: var(--text-sub); font-weight: 500; }
+
+  .tl-content.yellow { background: linear-gradient(140deg, #DFFF00 0%, #C4E600 100%); border: none; color: #0E0E10; }
+  .tl-content.yellow .tl-text { color: #0E0E10; }
+  .tl-content.yellow .tl-sub { color: rgba(14,14,16,0.6); }
+
+  /* ============ Tab Bar ============ */
+  .tabbar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 96px;
+    background: rgba(14,14,16,0.82);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--line);
+    display: flex; align-items: flex-start; justify-content: space-around;
+    padding: 12px 16px 0; z-index: 90;
+  }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-dim); font-size: 10px; font-weight: 600; padding-top: 6px; cursor: pointer; }
+  .tab.active { color: var(--yellow); }
+  .tab-center { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding-top: 0; }
+  .tab-plus {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--yellow-deep) 100%);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: -18px; cursor: pointer;
+    box-shadow: 0 8px 20px -4px rgba(223,255,0,0.5), 0 0 0 6px rgba(14,14,16,0.9);
+  }
+  .home-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; background: var(--text); border-radius: 100px; opacity: 0.9; z-index: 95; }
+
+  /* 入场 */
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .pet-card { animation: rise .5s ease both; }
+  .section { animation: rise .5s ease both; }
+  .section:nth-of-type(1) { animation-delay: .08s; }
+  .section:nth-of-type(2) { animation-delay: .16s; }
+  .section:nth-of-type(3) { animation-delay: .24s; }
+</style>
+<script src="theme-inline.js"></script>
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+</head>
+<body>
+<div class="iphone">
+  <div class="screen">
+    <div class="glow glow-y"></div>
+    <div class="glow glow-p"></div>
+    <div class="glow glow-y2"></div>
+    <div class="island"></div>
+
+    <!-- Status Bar -->
+    <div class="statusbar">
+      <span>21:52</span>
+      <div class="icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- 标题 -->
+      <div class="page-head">
+        <div class="page-title">我的<span class="accent">伙伴</span></div>
+        <div class="page-sub">记录陪伴 · 守护健康</div>
+      </div>
+
+      <!-- 宠物档案卡 -->
+      <div class="pet-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div class="pet-top">
+            <div class="pet-avatar">
+              <span id="petAvatar">🐱</span>
+              <div class="status-dot">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div class="pet-info">
+              <div class="pet-name-row">
+                <span class="pet-name" id="petName">饭团</span>
+                <span class="pet-gender" id="petGender">♀</span>
+              </div>
+              <div class="pet-breed" id="petBreed">英国短毛猫 · 银渐层</div>
+              <div class="pet-mood">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="#DFFF00"><circle cx="12" cy="12" r="6"/></svg>
+                <span id="petMood">今天心情很好</span>
+              </div>
+            </div>
+          </div>
+          <div class="pet-edit">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F8F5EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+        </div>
+        <div class="pet-stats">
+          <div class="ps">
+            <div class="ico">🎂</div>
+            <div class="v">2 岁</div>
+            <div class="l">2024.03.15</div>
+          </div>
+          <div class="ps">
+            <div class="ico">⚖️</div>
+            <div class="v">4.2kg</div>
+            <div class="l">体重</div>
+          </div>
+          <div class="ps">
+            <div class="ico">💉</div>
+            <div class="v">已接种</div>
+            <div class="l">疫苗</div>
+          </div>
+          <div class="ps">
+            <div class="ico">✨</div>
+            <div class="v">健康</div>
+            <div class="l">状态</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第一模块：健康记录 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>健康记录</div>
+          <div class="section-more">查看全部 ›</div>
+        </div>
+        <div class="health-grid">
+          <div class="hcard yellow">
+            <div class="hcard-top">
+              <div class="hcard-ico">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+              </div>
+              <span class="hcard-arrow">›</span>
+            </div>
+            <div>
+              <div class="hcard-name">体重变化</div>
+              <div class="hcard-desc">近 6 个月趋势</div>
+              <div class="hcard-val">4.2kg ↗ +0.3</div>
+            </div>
+          </div>
+          <div class="hcard purple">
+            <div class="hcard-top">
+              <div class="hcard-ico">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0016.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 002 8.5c0 2.29 1.51 4.04 3 5.5l7 7z"/></svg>
+              </div>
+              <span class="hcard-arrow" style="color:#fff">›</span>
+            </div>
+            <div>
+              <div class="hcard-name">疫苗记录</div>
+              <div class="hcard-desc">3 针已完成</div>
+              <div class="hcard-val">下次：2026.11</div>
+            </div>
+          </div>
+          <div class="hcard light">
+            <div class="hcard-top">
+              <div class="hcard-ico">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div>
+              <span class="hcard-arrow">›</span>
+            </div>
+            <div>
+              <div class="hcard-name">看诊记录</div>
+              <div class="hcard-desc">最近一次体检</div>
+              <div class="hcard-val">2026.06 · 一切正常</div>
+            </div>
+          </div>
+          <div class="hcard dark">
+            <div class="hcard-top">
+              <div class="hcard-ico">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DFFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              </div>
+              <span class="hcard-arrow" style="color:var(--text)">›</span>
+            </div>
+            <div>
+              <div class="hcard-name">用药记录</div>
+              <div class="hcard-desc">日常驱虫 & 营养</div>
+              <div class="hcard-val">每月 1 次驱虫</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第二模块：日常陪伴 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>日常陪伴</div>
+          <div class="section-more">+ 记录</div>
+        </div>
+        <div class="companion-stack">
+          <!-- 今日照片 -->
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+              <span>📷</span> 今日照片
+            </div>
+            <div class="photo-scroll">
+              <div class="photo-thumb">
+                <img src="https://picsum.photos/seed/pet-sun/220/260" alt="">
+                <div class="ptag">晒太阳</div>
+              </div>
+              <div class="photo-thumb">
+                <img src="https://picsum.photos/seed/pet-nap/220/260" alt="">
+                <div class="ptag">午睡</div>
+              </div>
+              <div class="photo-thumb">
+                <img src="https://picsum.photos/seed/pet-play/220/260" alt="">
+                <div class="ptag">玩耍</div>
+              </div>
+              <div class="photo-add">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                添加照片
+              </div>
+            </div>
+          </div>
+
+          <!-- 喂食 + 玩耍 -->
+          <div class="duo-grid">
+            <div class="duo-card light">
+              <div class="duo-head">
+                <span class="duo-emoji">🍗</span>
+                <span class="duo-name">喂食记录</span>
+              </div>
+              <div class="duo-time">今天 08:30 · 已喂</div>
+              <div class="duo-text">主粮 30g + 冻干零食</div>
+              <div class="duo-foot">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                下次 18:00
+              </div>
+            </div>
+            <div class="duo-card purple">
+              <div class="duo-head">
+                <span class="duo-emoji">🎾</span>
+                <span class="duo-name">玩耍记录</span>
+              </div>
+              <div class="duo-time" style="color:rgba(255,255,255,0.6)">今天 15:00 · 20 分钟</div>
+              <div class="duo-text">逗猫棒 + 追球游戏</div>
+              <div class="duo-btn">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                再玩一会
+              </div>
+            </div>
+          </div>
+
+          <!-- 小记 -->
+          <div class="note-card">
+            <div class="note-head">
+              <span class="note-emoji">📝</span>
+              <span class="note-title">今日小记</span>
+              <span class="note-date">8月1日</span>
+            </div>
+            <div class="note-text">
+              饭团今天在窗边晒了整整一下午太阳，伸懒腰的样子太可爱了。下午玩逗猫棒的时候特别兴奋，<span class="highlight">连续跳了好几次</span>，看来体力不错。晚上胃口也很好，把碗里的粮都吃光了 🥰
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第三模块：成长时间轴 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>成长时间轴</div>
+          <div class="section-more">全部 ›</div>
+        </div>
+        <div class="timeline" id="petTimeline">
+          <!-- 条目1 -->
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-date">2026.08.01 · 今天</div>
+            <div class="tl-content has-img">
+              <img class="tl-img" src="https://picsum.photos/seed/pet-today/400/260" alt="">
+              <div class="tl-body">
+                <div class="tl-text">今天晒太阳 ☀️</div>
+                <div class="tl-sub">在窗边躺了一下午，尾巴摇来摇去</div>
+              </div>
+            </div>
+          </div>
+          <!-- 条目2 -->
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-date">2026.07.28</div>
+            <div class="tl-content yellow">
+              <div class="tl-text" style="padding:14px 16px;">第 4 次驱虫完成 💊</div>
+              <div class="tl-sub" style="padding:0 16px 14px;">体重稳定在 4.2kg，医生说很健康</div>
+            </div>
+          </div>
+          <!-- 条目3 -->
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-date">2026.07.20</div>
+            <div class="tl-content has-img">
+              <img class="tl-img" src="https://picsum.photos/seed/pet-cake/400/260" alt="">
+              <div class="tl-body">
+                <div class="tl-text">两岁生日快乐 🎂</div>
+                <div class="tl-sub">给饭团做了专属鸡肉蛋糕，吃得很开心</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tabbar">
+      <div class="tab active">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>首页</span>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span>任务</span>
+      </div>
+      <div class="tab-center">
+        <div class="tab-plus">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>记录</span>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>我的</span>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+</div>
+<script src="theme-runtime.js"></script>
+<script src="storage.js"></script>
+<script src="pwa.js"></script>
+<script>
+(function () {
+  'use strict';
+  if (!window.LifeOS) return;
+  var pet = LifeOS.get('pet');
+  if (!pet) return;
+
+  // 基本信息
+  setText('petAvatar', pet.avatar || '🐱');
+  setText('petName', pet.name || '饭团');
+  setText('petGender', pet.gender || '♀');
+  setText('petBreed', pet.species || '英国短毛猫 · 银渐层');
+  setText('petMood', pet.mood || '今天心情很好');
+
+  // 成长时间轴
+  if (pet.timeline && pet.timeline.length) {
+    var tl = document.getElementById('petTimeline');
+    if (tl) {
+      tl.innerHTML = pet.timeline.map(function (item) {
+        var contentClass = item.img ? 'tl-content has-img' : ('tl-content' + (item.color ? ' ' + item.color : ''));
+        var html = '<div class="tl-item">' +
+          '<div class="tl-dot"></div>' +
+          '<div class="tl-date">' + esc(item.date) + '</div>';
+        if (item.img) {
+          html += '<div class="tl-content has-img">' +
+            '<img class="tl-img" src="' + esc(item.img) + '" alt="">' +
+            '<div class="tl-body">' +
+              '<div class="tl-text">' + esc(item.text) + '</div>' +
+              (item.sub ? '<div class="tl-sub">' + esc(item.sub) + '</div>' : '') +
+            '</div></div>';
+        } else {
+          html += '<div class="tl-content ' + (item.color || '') + '">' +
+            '<div class="tl-text" style="padding:14px 16px;">' + esc(item.text) + '</div>' +
+            (item.sub ? '<div class="tl-sub" style="padding:0 16px 14px;">' + esc(item.sub) + '</div>' : '') +
+          '</div>';
+        }
+        html += '</div>';
+        return html;
+      }).join('');
+    }
+  }
+
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+})();
+</script>
+</body>
+</html>
