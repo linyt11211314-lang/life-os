@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0E0E0F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="我的生活 OS">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="我的生活 OS">
+  <meta name="description" content="一个为认真生活的人打造的个人操作系统。管理待办、记录生活、规划财富、追踪周期、记录灵感。">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+
+<title>任务中心 · 我的生活 OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     设计系统（锁定规范，与首页一致）
+     ============================================================ */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0E0E0F;
+    --bg-2: #16161A;
+    --card: #F8F5EE;
+    --card-2: #1C1C20;
+    --yellow: #DFFF00;
+    --yellow-deep: #C4E600;
+    --purple: #8B5CF6;
+    --purple-deep: #7C3AED;
+    --purple-soft: rgba(139,92,246,0.16);
+    --text: #F8F5EE;
+    --text-sub: #9A9AA2;
+    --text-dim: #6B6B72;
+    --line: rgba(255,255,255,0.07);
+    --r-lg: 28px;
+    --r-md: 20px;
+    --r-sm: 12px;
+  }
+  html, body {
+    font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+    background: #050506;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+
+  /* ============ iPhone 14 Pro Frame ============ */
+  .iphone {
+    position: relative;
+    width: 393px; height: 852px;
+    background: #000; border-radius: 56px; padding: 12px;
+    box-shadow:
+      0 0 0 2px #2a2a2c,
+      0 0 0 14px #0a0a0b,
+      0 50px 90px -20px rgba(223,255,0,0.08),
+      0 30px 70px -10px rgba(0,0,0,0.85);
+    flex-shrink: 0;
+  }
+  .screen {
+    position: relative; width: 100%; height: 100%;
+    background: linear-gradient(165deg, #141416 0%, #0E0E10 45%, #111114 100%);
+    border-radius: 44px; overflow: hidden; isolation: isolate;
+  }
+  .glow { position: absolute; border-radius: 50%; filter: blur(70px); z-index: 0; pointer-events: none; }
+  .glow-y { width: 240px; height: 240px; background: rgba(223,255,0,0.22); top: -60px; right: -70px; }
+  .glow-p { width: 200px; height: 200px; background: rgba(139,92,246,0.28); top: 180px; left: -80px; }
+  .glow-y2 { width: 180px; height: 180px; background: rgba(223,255,0,0.10); bottom: 120px; right: -60px; }
+
+  .island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 125px; height: 37px; background: #000; border-radius: 20px; z-index: 100; }
+
+  .statusbar {
+    position: relative; z-index: 50; height: 54px; padding: 0 28px 6px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .statusbar .icons { display:flex; align-items:center; gap:6px; }
+  .statusbar svg { display:block; }
+
+  .content {
+    position: relative; z-index: 10;
+    height: calc(100% - 54px - 96px);
+    overflow-y: auto; overflow-x: hidden;
+    padding: 4px 20px 24px; scrollbar-width: none;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* ============ 页面头部 ============ */
+  .page-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 8px 2px 0;
+  }
+  .page-top-left { flex: 1; }
+  .page-title { font-size: 32px; font-weight: 800; line-height: 1.1; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .page-title .accent { color: var(--yellow); font-style: italic; }
+  .page-sub { font-size: 13px; color: var(--text-sub); font-weight: 400; letter-spacing: 0.3px; }
+
+  .level-badge {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  }
+  .lv-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--yellow); color: #0E0E10;
+    font-size: 13px; font-weight: 800; letter-spacing: 0.3px;
+    padding: 7px 13px; border-radius: 100px;
+    box-shadow: 0 6px 16px -4px rgba(223,255,0,0.4);
+  }
+  .lv-pill svg { display: block; }
+  .streak-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+    font-size: 11px; font-weight: 600; color: var(--text-sub);
+    padding: 5px 10px; border-radius: 100px;
+  }
+  .streak-pill .fire { color: var(--yellow); }
+
+  /* ============ Section 通用 ============ */
+  .section { margin-top: 24px; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; padding: 0 2px;
+  }
+  .section-title { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 8px; }
+  .section-title .bar { width: 3px; height: 14px; background: var(--yellow); border-radius: 2px; }
+  .section-more { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+
+  /* ============ 今日任务卡 ============ */
+  .task-list { display: flex; flex-direction: column; gap: 12px; }
+  .task-card {
+    background: var(--card); border-radius: var(--r-md);
+    padding: 16px; position: relative; overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+    cursor: pointer;
+  }
+  .task-card:active { transform: scale(0.98); }
+  .task-card.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; }
+  .task-card.dark { background: var(--card-2); border: 1px solid var(--line); color: var(--text); }
+  .task-card.done { opacity: 0.55; }
+  .task-card.done .task-name { text-decoration: line-through; text-decoration-color: rgba(14,14,16,0.4); }
+
+  .task-row { display: flex; align-items: flex-start; gap: 13px; }
+  .task-check {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid rgba(14,14,16,0.2);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    cursor: pointer; position: relative;
+  }
+  .task-card.purple .task-check { border-color: rgba(255,255,255,0.35); }
+  .task-card.dark .task-check { border-color: rgba(255,255,255,0.2); }
+  .task-check.checked {
+    background: var(--yellow); border-color: var(--yellow);
+    transform: scale(1.05);
+  }
+  .task-check svg { opacity: 0; transform: scale(0.4); transition: all .3s cubic-bezier(.34,1.56,.64,1); }
+  .task-check.checked svg { opacity: 1; transform: scale(1); }
+
+  .task-body { flex: 1; min-width: 0; }
+  .task-top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
+  .task-name { font-size: 15px; font-weight: 700; color: #0E0E10; letter-spacing: -0.2px; line-height: 1.3; }
+  .task-card.purple .task-name { color: #fff; }
+  .task-card.dark .task-name { color: var(--text); }
+  .task-meta-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 100px;
+    letter-spacing: 0.3px; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .tag.cat-health { background: rgba(223,255,0,0.2); color: #5a6b00; }
+  .tag.cat-study { background: rgba(139,92,246,0.18); color: #6d28d9; }
+  .tag.cat-life { background: rgba(14,14,16,0.08); color: #0E0E10; }
+  .tag.cat-work { background: rgba(14,14,16,0.08); color: #0E0E10; }
+  .task-card.purple .tag.cat-life, .task-card.purple .tag.cat-work { background: rgba(255,255,255,0.16); color: #fff; }
+  .task-card.purple .tag.cat-health { background: rgba(223,255,0,0.25); color: #0E0E10; }
+  .task-card.purple .tag.cat-study { background: rgba(255,255,255,0.16); color: #fff; }
+  .task-card.dark .tag.cat-health { background: rgba(223,255,0,0.15); color: var(--yellow); }
+  .task-card.dark .tag.cat-study { background: rgba(139,92,246,0.2); color: var(--purple); }
+  .task-card.dark .tag.cat-life, .task-card.dark .tag.cat-work { background: rgba(255,255,255,0.08); color: var(--text-sub); }
+
+  .tag.status-progress { background: var(--yellow); color: #0E0E10; }
+  .tag.status-pending { background: rgba(14,14,16,0.08); color: rgba(14,14,16,0.5); }
+  .tag.status-done { background: #0E0E10; color: var(--yellow); }
+  .task-card.purple .tag.status-pending { background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.6); }
+  .task-card.purple .tag.status-done { background: rgba(255,255,255,0.16); color: #fff; }
+  .task-card.dark .tag.status-pending { background: rgba(255,255,255,0.08); color: var(--text-dim); }
+  .task-card.dark .tag.status-progress { background: var(--yellow); color: #0E0E10; }
+  .task-card.dark .tag.status-done { background: rgba(223,255,0,0.15); color: var(--yellow); }
+
+  .task-deadline { font-size: 10.5px; font-weight: 500; color: var(--text-dim); display: inline-flex; align-items: center; gap: 3px; }
+  .task-card.purple .task-deadline { color: rgba(255,255,255,0.6); }
+  .task-card:not(.dark):not(.purple) .task-deadline { color: rgba(14,14,16,0.45); }
+
+  .task-bottom { margin-top: 12px; display: flex; align-items: center; gap: 10px; }
+  .ptrack { height: 6px; background: rgba(14,14,16,0.1); border-radius: 100px; overflow: hidden; flex: 1; }
+  .task-card.purple .ptrack { background: rgba(255,255,255,0.22); }
+  .task-card.dark .ptrack { background: rgba(255,255,255,0.1); }
+  .pfill { height: 100%; background: #0E0E10; border-radius: 100px; transition: width .5s ease; }
+  .pfill.y { background: var(--yellow); }
+  .pfill.p { background: var(--purple); }
+  .task-card.purple .pfill { background: var(--yellow); }
+  .task-card.dark .pfill { background: var(--yellow); }
+  .task-pct { font-size: 12px; font-weight: 800; color: #0E0E10; flex-shrink: 0; min-width: 32px; text-align: right; }
+  .task-card.purple .task-pct { color: var(--yellow); }
+  .task-card.dark .task-pct { color: var(--yellow); }
+
+  /* 完成动画脉冲 */
+  @keyframes pulse-done {
+    0% { box-shadow: 0 0 0 0 rgba(223,255,0,0.5); }
+    100% { box-shadow: 0 0 0 20px rgba(223,255,0,0); }
+  }
+  .task-check.just-done { animation: pulse-done .6s ease; }
+
+  /* ============ 分类入口 2×2 ============ */
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cat-card {
+    border-radius: var(--r-md); padding: 18px 16px;
+    position: relative; overflow: hidden; cursor: pointer;
+    transition: transform .2s ease;
+    min-height: 96px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .cat-card:active { transform: scale(0.97); }
+  .cat-card.yellow { background: linear-gradient(140deg, #DFFF00 0%, #C4E600 100%); color: #0E0E10; }
+  .cat-card.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; }
+  .cat-card.light { background: var(--card); color: #0E0E10; }
+  .cat-card.dark { background: var(--card-2); border: 1px solid var(--line); color: var(--text); }
+  .cat-emoji { font-size: 24px; line-height: 1; margin-bottom: 8px; }
+  .cat-name { font-size: 15px; font-weight: 800; letter-spacing: -0.2px; margin-bottom: 2px; }
+  .cat-count { font-size: 11px; font-weight: 600; opacity: 0.65; }
+  .cat-card .cat-arrow {
+    position: absolute; top: 16px; right: 16px;
+    font-size: 16px; font-weight: 700; opacity: 0.4;
+  }
+
+  /* ============ 成长面板 ============ */
+  .growth-card {
+    background: linear-gradient(140deg, #1C1C20 0%, #16161A 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: 22px 20px;
+    position: relative; overflow: hidden;
+  }
+  .growth-card::before {
+    content: ''; position: absolute; width: 160px; height: 160px;
+    background: rgba(139,92,246,0.22); border-radius: 50%;
+    top: -60px; right: -50px; filter: blur(30px);
+  }
+  .growth-card::after {
+    content: ''; position: absolute; width: 100px; height: 100px;
+    background: rgba(223,255,0,0.12); border-radius: 50%;
+    bottom: -30px; left: -20px; filter: blur(25px);
+  }
+  .growth-head { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+  .growth-title { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; }
+  .growth-sub { font-size: 11px; color: var(--text-sub); font-weight: 500; margin-top: 2px; }
+  .growth-lv {
+    background: var(--yellow); color: #0E0E10;
+    font-size: 12px; font-weight: 800; padding: 6px 12px; border-radius: 100px;
+  }
+
+  .exp-bar-wrap { position: relative; z-index: 2; margin-bottom: 16px; }
+  .exp-bar-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .exp-val { font-size: 13px; font-weight: 700; color: var(--text); }
+  .exp-val .num { color: var(--yellow); font-size: 16px; }
+  .exp-next { font-size: 11px; color: var(--text-sub); font-weight: 500; }
+  .exp-bar { height: 10px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden; position: relative; }
+  .exp-fill {
+    height: 100%; border-radius: 100px;
+    background: linear-gradient(90deg, var(--purple) 0%, var(--yellow) 100%);
+    transition: width .8s cubic-bezier(.4,0,.2,1);
+    position: relative;
+  }
+  .exp-fill::after {
+    content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 20px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+    border-radius: 100px;
+  }
+
+  .growth-stats { position: relative; z-index: 2; display: flex; gap: 10px; }
+  .gs {
+    flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    border-radius: 14px; padding: 12px 10px; text-align: center;
+  }
+  .gs .v { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
+  .gs .v.y { color: var(--yellow); }
+  .gs .v.p { color: var(--purple); }
+  .gs .l { font-size: 10px; color: var(--text-sub); font-weight: 500; margin-top: 2px; }
+
+  /* ============ Tab Bar ============ */
+  .tabbar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 96px;
+    background: rgba(14,14,16,0.82);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--line);
+    display: flex; align-items: flex-start; justify-content: space-around;
+    padding: 12px 16px 0; z-index: 90;
+  }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-dim); font-size: 10px; font-weight: 600; padding-top: 6px; cursor: pointer; }
+  .tab.active { color: var(--yellow); }
+  .tab-center { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding-top: 0; }
+  .tab-plus {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--yellow-deep) 100%);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: -18px; cursor: pointer;
+    box-shadow: 0 8px 20px -4px rgba(223,255,0,0.5), 0 0 0 6px rgba(14,14,16,0.9);
+    transition: transform .2s ease;
+  }
+  .tab-plus:active { transform: scale(0.92) rotate(90deg); }
+  .home-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; background: var(--text); border-radius: 100px; opacity: 0.9; z-index: 95; }
+
+  /* ============ 新增任务弹窗 ============ */
+  .create-sheet {
+    position: absolute; inset: 0; z-index: 200;
+    background: rgba(8,8,10,0.6); backdrop-filter: blur(10px);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  .create-sheet.show { opacity: 1; pointer-events: auto; }
+  .sheet-panel {
+    background: linear-gradient(165deg, #1A1A1E 0%, #141416 100%);
+    border: 1px solid var(--line);
+    border-radius: 32px 32px 44px 44px;
+    padding: 24px 22px 30px;
+    transform: translateY(100%);
+    transition: transform .4s cubic-bezier(.32,.72,0,1);
+    max-height: 88%;
+    overflow-y: auto; scrollbar-width: none;
+  }
+  .create-sheet.show .sheet-panel { transform: translateY(0); }
+  .sheet-panel::-webkit-scrollbar { display: none; }
+  .sheet-handle {
+    width: 40px; height: 4px; background: rgba(255,255,255,0.2);
+    border-radius: 100px; margin: 0 auto 18px;
+  }
+  .sheet-title { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 4px; }
+  .sheet-title .accent { color: var(--yellow); }
+  .sheet-sub { font-size: 12px; color: var(--text-sub); margin-bottom: 22px; }
+
+  .field { margin-bottom: 18px; }
+  .field-label { font-size: 12px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.3px; margin-bottom: 8px; text-transform: uppercase; }
+  .field-input {
+    width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px 16px;
+    font-size: 15px; font-weight: 600; color: var(--text);
+    font-family: inherit; outline: none; transition: border-color .2s;
+  }
+  .field-input::placeholder { color: var(--text-dim); font-weight: 500; }
+  .field-input:focus { border-color: var(--yellow); background: rgba(223,255,0,0.04); }
+  textarea.field-input { resize: none; min-height: 60px; line-height: 1.5; font-weight: 500; }
+
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 100px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+    color: var(--text-sub); cursor: pointer; transition: all .2s;
+  }
+  .chip.active { background: var(--yellow); color: #0E0E10; border-color: transparent; font-weight: 700; }
+  .chip.active.p { background: var(--purple); color: #fff; border-color: transparent; }
+
+  .field-row { display: flex; gap: 12px; }
+  .field-row .field { flex: 1; }
+
+  .sheet-actions { display: flex; gap: 12px; margin-top: 8px; }
+  .btn-cancel {
+    flex: 1; padding: 15px; border-radius: 16px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+    color: var(--text-sub); font-size: 15px; font-weight: 700; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-save {
+    flex: 2; padding: 15px; border-radius: 16px;
+    background: linear-gradient(135deg, var(--yellow), var(--yellow-deep));
+    color: #0E0E10; font-size: 15px; font-weight: 800; cursor: pointer;
+    border: none; font-family: inherit;
+    box-shadow: 0 8px 20px -6px rgba(223,255,0,0.4);
+    transition: transform .15s;
+  }
+  .btn-save:active { transform: scale(0.97); }
+
+  /* ============ 任务详情弹窗 ============ */
+  .detail-sheet {
+    position: absolute; inset: 0; z-index: 200;
+    background: rgba(8,8,10,0.6); backdrop-filter: blur(10px);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  .detail-sheet.show { opacity: 1; pointer-events: auto; }
+  .detail-panel {
+    background: linear-gradient(165deg, #1A1A1E 0%, #141416 100%);
+    border: 1px solid var(--line);
+    border-radius: 32px 32px 44px 44px;
+    padding: 24px 22px 30px;
+    transform: translateY(100%);
+    transition: transform .4s cubic-bezier(.32,.72,0,1);
+    max-height: 80%; overflow-y: auto; scrollbar-width: none;
+  }
+  .detail-sheet.show .detail-panel { transform: translateY(0); }
+  .detail-panel::-webkit-scrollbar { display: none; }
+
+  .detail-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .detail-cat { font-size: 11px; font-weight: 700; color: var(--yellow); letter-spacing: 0.5px; text-transform: uppercase; }
+  .detail-close {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .detail-name { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; line-height: 1.25; margin-bottom: 14px; }
+  .detail-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .detail-progress-section { margin-bottom: 20px; }
+  .detail-progress-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .detail-progress-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.3px; }
+  .detail-progress-val { font-size: 18px; font-weight: 800; color: var(--yellow); }
+  .detail-note {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px 16px;
+    font-size: 13px; color: var(--text-sub); line-height: 1.6; font-weight: 500;
+    margin-bottom: 20px;
+  }
+  .detail-note-label { font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; }
+
+  /* ============ Toast ============ */
+  .toast {
+    position: absolute; top: 70px; left: 50%; transform: translateX(-50%) translateY(-20px);
+    background: var(--yellow); color: #0E0E10;
+    font-size: 13px; font-weight: 700; padding: 11px 20px; border-radius: 100px;
+    z-index: 300; opacity: 0; pointer-events: none;
+    transition: all .35s cubic-bezier(.32,.72,0,1);
+    box-shadow: 0 10px 30px -6px rgba(223,255,0,0.5);
+    display: flex; align-items: center; gap: 7px; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* 入场 */
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  .task-card { animation: rise .4s ease both; }
+</style>
+<script src="theme-inline.js"></script>
+<script src="storage.js"></script>
+<script src="pwa.js"></script>
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+</head>
+<body>
+<div class="iphone">
+  <div class="screen">
+    <div class="glow glow-y"></div>
+    <div class="glow glow-p"></div>
+    <div class="glow glow-y2"></div>
+    <div class="island"></div>
+
+    <!-- Status Bar -->
+    <div class="statusbar">
+      <span>21:40</span>
+      <div class="icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- 顶部标题 -->
+      <div class="page-top">
+        <div class="page-top-left">
+          <div class="page-title"><span class="accent">任务</span></div>
+          <div class="page-sub">记录目标 · 持续成长</div>
+        </div>
+        <div class="level-badge">
+          <div class="lv-pill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Lv.01
+          </div>
+          <div class="streak-pill"><span class="fire">🔥</span> 连续 12 天</div>
+        </div>
+      </div>
+
+      <!-- 第一部分：今日任务 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>今日任务</div>
+          <div class="section-more" id="todayCount">3 项</div>
+        </div>
+        <div class="task-list" id="taskList">
+          <!-- 任务由 JS 渲染 -->
+        </div>
+      </div>
+
+      <!-- 第二部分：任务分类 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>任务分类</div>
+          <div class="section-more">管理</div>
+        </div>
+        <div class="cat-grid">
+          <div class="cat-card yellow">
+            <div class="cat-arrow">›</div>
+            <div>
+              <div class="cat-emoji">🔥</div>
+              <div class="cat-name">今日</div>
+            </div>
+            <div class="cat-count">3 个进行中</div>
+          </div>
+          <div class="cat-card purple">
+            <div class="cat-arrow">›</div>
+            <div>
+              <div class="cat-emoji">🎯</div>
+              <div class="cat-name">目标</div>
+            </div>
+            <div class="cat-count">5 个长期目标</div>
+          </div>
+          <div class="cat-card light">
+            <div class="cat-arrow">›</div>
+            <div>
+              <div class="cat-emoji">🔁</div>
+              <div class="cat-name">习惯</div>
+            </div>
+            <div class="cat-count">4 个习惯打卡</div>
+          </div>
+          <div class="cat-card dark">
+            <div class="cat-arrow">›</div>
+            <div>
+              <div class="cat-emoji">📌</div>
+              <div class="cat-name">待办</div>
+            </div>
+            <div class="cat-count">7 项待完成</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第三部分：成长进度 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>成长进度</div>
+        </div>
+        <div class="growth-card">
+          <div class="growth-head">
+            <div>
+              <div class="growth-title">本周成长</div>
+              <div class="growth-sub">距离下一级还差 120 经验</div>
+            </div>
+            <div class="growth-lv">Lv.01</div>
+          </div>
+          <div class="exp-bar-wrap">
+            <div class="exp-bar-head">
+              <div class="exp-val">EXP <span class="num" id="expNum">380</span> / 500</div>
+              <div class="exp-next">76%</div>
+            </div>
+            <div class="exp-bar"><div class="exp-fill" id="expFill" style="width:76%"></div></div>
+          </div>
+          <div class="growth-stats">
+            <div class="gs"><div class="v y" id="statDone">21</div><div class="l">完成任务</div></div>
+            <div class="gs"><div class="v p">12</div><div class="l">连续天数</div></div>
+            <div class="gs"><div class="v">Lv.01</div><div class="l">成长等级</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tabbar">
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>首页</span>
+      </div>
+      <div class="tab active">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span>任务</span>
+      </div>
+      <div class="tab-center">
+        <div class="tab-plus" id="addBtn">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>记录</span>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>我的</span>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <span id="toastText">任务已完成</span>
+    </div>
+
+    <!-- 新增任务弹窗 -->
+    <div class="create-sheet" id="createSheet">
+      <div class="sheet-panel">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">新建<span class="accent">任务</span></div>
+        <div class="sheet-sub">设定一个小目标，今天就去完成它</div>
+
+        <div class="field">
+          <div class="field-label">任务名称</div>
+          <input class="field-input" id="fName" placeholder="例如：阅读 30 分钟" maxlength="30">
+        </div>
+
+        <div class="field">
+          <div class="field-label">分类</div>
+          <div class="chip-row" id="fCat">
+            <div class="chip active" data-cat="life">生活</div>
+            <div class="chip" data-cat="health">健康</div>
+            <div class="chip" data-cat="study">学习</div>
+            <div class="chip" data-cat="work">工作</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">优先级</div>
+          <div class="chip-row" id="fPrio">
+            <div class="chip" data-prio="low">低</div>
+            <div class="chip active" data-prio="mid">中</div>
+            <div class="chip p" data-prio="high">高</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">截止时间</div>
+          <input class="field-input" id="fDeadline" placeholder="例如：今天 22:00" value="今天 22:00">
+        </div>
+
+        <div class="field">
+          <div class="field-label">备注</div>
+          <textarea class="field-input" id="fNote" placeholder="写点什么..." maxlength="80"></textarea>
+        </div>
+
+        <div class="sheet-actions">
+          <button class="btn-cancel" id="cancelBtn">取消</button>
+          <button class="btn-save" id="saveBtn">创建任务</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 任务详情弹窗 -->
+    <div class="detail-sheet" id="detailSheet">
+      <div class="detail-panel" id="detailPanel">
+        <!-- 由 JS 填充 -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 任务数据
+// ============================================================
+const CAT_LABEL = { health:'健康', study:'学习', life:'生活', work:'工作' };
+const CAT_EMOJI = { health:'💪', study:'📚', life:'🌿', work:'💼' };
+
+// 从本地存储读取待办数据
+let tasks = (window.LifeOS ? LifeOS.get('todos') : []) || [];
+
+let exp = 380, doneCount = tasks.filter(t => t.status === 'done').length;
+let selectedCat = 'life', selectedPrio = 'mid';
+
+const $ = id => document.getElementById(id);
+
+// 保存到本地存储
+function saveTasks() {
+  if (window.LifeOS) LifeOS.set('todos', tasks);
+}
+
+// ============================================================
+// 渲染任务列表
+// ============================================================
+function renderTasks() {
+  const list = $('taskList');
+  list.innerHTML = '';
+  tasks.forEach((t, i) => {
+    const card = document.createElement('div');
+    let cardCls = 'task-card';
+    if (t.cardType === 'purple') cardCls += ' purple';
+    if (t.cardType === 'dark') cardCls += ' dark';
+    if (t.status === 'done') cardCls += ' done';
+    card.className = cardCls;
+    card.style.animationDelay = (i * 0.06) + 's';
+    card.dataset.id = t.id;
+
+    const statusTag = t.status === 'done' ? 'status-done' : (t.status === 'progress' ? 'status-progress' : 'status-pending');
+    const statusText = t.status === 'done' ? '已完成' : (t.status === 'progress' ? '进行中' : '未开始');
+    const fillCls = t.cardType === 'purple' || t.cardType === 'dark' ? '' : 'y';
+
+    card.innerHTML = `
+      <div class="task-row">
+        <div class="task-check ${t.status==='done'?'checked':''}" data-id="${t.id}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="task-body">
+          <div class="task-top-row">
+            <div class="task-name">${t.name}</div>
+          </div>
+          <div class="task-meta-row">
+            <span class="tag cat-${t.cat}">${CAT_EMOJI[t.cat]} ${CAT_LABEL[t.cat]}</span>
+            <span class="tag ${statusTag}">${statusText}</span>
+            <span class="task-deadline">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              ${t.deadline}
+            </span>
+          </div>
+          <div class="task-bottom">
+            <div class="ptrack"><div class="pfill ${fillCls}" style="width:${t.progress}%"></div></div>
+            <div class="task-pct">${t.progress}%</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 点击任务卡 → 详情
+    card.addEventListener('click', e => {
+      if (e.target.closest('.task-check')) return;
+      openDetail(t.id);
+    });
+
+    // 点击圆形按钮 → 完成
+    const check = card.querySelector('.task-check');
+    check.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleDone(t.id, check);
+    });
+
+    list.appendChild(card);
+  });
+  $('todayCount').textContent = tasks.length + ' 项';
+}
+
+// ============================================================
+// 完成 / 取消完成
+// ============================================================
+function toggleDone(id, checkEl) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  if (t.status === 'done') {
+    // 取消完成
+    t.status = 'progress';
+    t.progress = t.progress >= 100 ? 60 : t.progress;
+    exp = Math.max(0, exp - 20);
+    doneCount = Math.max(0, doneCount - 1);
+    showToast('已取消完成');
+  } else {
+    // 完成
+    t.status = 'done';
+    t.progress = 100;
+    exp += 20;
+    doneCount += 1;
+    checkEl.classList.add('just-done');
+    setTimeout(() => checkEl.classList.remove('just-done'), 600);
+    showToast('✨ 任务已完成 +20 EXP');
+  }
+  saveTasks(); // 持久化
+  updateStats();
+  setTimeout(renderTasks, 200);
+}
+
+// ============================================================
+// 更新统计
+// ============================================================
+function updateStats() {
+  $('expNum').textContent = exp;
+  $('statDone').textContent = doneCount;
+  const pct = Math.min(100, Math.round(exp / 500 * 100));
+  $('expFill').style.width = pct + '%';
+  document.querySelector('.exp-next').textContent = pct + '%';
+}
+
+// ============================================================
+// Toast
+// ============================================================
+let toastTimer;
+function showToast(text) {
+  $('toastText').textContent = text;
+  $('toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('toast').classList.remove('show'), 1800);
+}
+
+// ============================================================
+// 新增任务弹窗
+// ============================================================
+$('addBtn').addEventListener('click', () => {
+  $('createSheet').classList.add('show');
+  setTimeout(() => $('fName').focus(), 350);
+});
+$('cancelBtn').addEventListener('click', closeCreate);
+$('createSheet').addEventListener('click', e => {
+  if (e.target === $('createSheet')) closeCreate();
+});
+function closeCreate() {
+  $('createSheet').classList.remove('show');
+  $('fName').value = '';
+  $('fNote').value = '';
+  selectedCat = 'life'; selectedPrio = 'mid';
+  resetChips();
+}
+
+function resetChips() {
+  document.querySelectorAll('#fCat .chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.cat === selectedCat);
+    c.classList.remove('p');
+  });
+  document.querySelectorAll('#fPrio .chip').forEach(c => {
+    c.classList.remove('active', 'p');
+    if (c.dataset.prio === selectedPrio) {
+      c.classList.add('active');
+      if (selectedPrio === 'high') c.classList.add('p');
+    }
+  });
+}
+
+document.querySelectorAll('#fCat .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    selectedCat = c.dataset.cat;
+    document.querySelectorAll('#fCat .chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+  });
+});
+document.querySelectorAll('#fPrio .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    selectedPrio = c.dataset.prio;
+    document.querySelectorAll('#fPrio .chip').forEach(x => x.classList.remove('active','p'));
+    c.classList.add('active');
+    if (selectedPrio === 'high') c.classList.add('p');
+  });
+});
+
+$('saveBtn').addEventListener('click', () => {
+  const name = $('fName').value.trim();
+  if (!name) {
+    $('fName').focus();
+    $('fName').style.borderColor = '#ff6b6b';
+    setTimeout(() => $('fName').style.borderColor = '', 1500);
+    showToast('请输入任务名称');
+    return;
+  }
+  const deadline = $('fDeadline').value.trim() || '今天 22:00';
+  const note = $('fNote').value.trim() || '还没有备注～';
+  const newId = Date.now();
+  const cardTypes = ['light','purple','dark'];
+  tasks.unshift({
+    id: newId, name, cat: selectedCat, progress: 0,
+    status: 'pending', deadline, note,
+    cardType: cardTypes[tasks.length % 3]
+  });
+  saveTasks(); // 持久化
+  closeCreate();
+  renderTasks();
+  showToast('任务已创建');
+});
+
+// ============================================================
+// 任务详情
+// ============================================================
+function openDetail(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  const statusText = t.status === 'done' ? '已完成' : (t.status === 'progress' ? '进行中' : '未开始');
+  $('detailPanel').innerHTML = `
+    <div class="detail-head">
+      <div class="detail-cat">${CAT_EMOJI[t.cat]} ${CAT_LABEL[t.cat]} · ${statusText}</div>
+      <div class="detail-close" id="detailClose">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F8F5EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+    <div class="detail-name">${t.name}</div>
+    <div class="detail-meta">
+      <span class="tag cat-${t.cat}" style="background:rgba(139,92,246,0.18);color:#a78bfa">${CAT_EMOJI[t.cat]} ${CAT_LABEL[t.cat]}</span>
+      <span class="tag ${t.status==='done'?'status-done':(t.status==='progress'?'status-progress':'status-pending')}">${statusText}</span>
+      <span class="tag" style="background:rgba(255,255,255,0.06);color:var(--text-sub);border:1px solid var(--line)">⏰ ${t.deadline}</span>
+    </div>
+    <div class="detail-progress-section">
+      <div class="detail-progress-head">
+        <div class="detail-progress-label">完成进度</div>
+        <div class="detail-progress-val">${t.progress}%</div>
+      </div>
+      <div class="ptrack" style="background:rgba(255,255,255,0.08)"><div class="pfill y" style="width:${t.progress}%"></div></div>
+    </div>
+    <div>
+      <div class="detail-note-label">备注</div>
+      <div class="detail-note">${t.note}</div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="detailCloseBtn">关闭</button>
+      <button class="btn-save" id="detailToggleBtn">${t.status==='done'?'重新打开':'标记完成'}</button>
+    </div>
+  `;
+  $('detailSheet').classList.add('show');
+  $('detailClose').addEventListener('click', closeDetail);
+  $('detailCloseBtn').addEventListener('click', closeDetail);
+  $('detailToggleBtn').addEventListener('click', () => {
+    toggleDone(t.id, {});
+    closeDetail();
+  });
+}
+function closeDetail() { $('detailSheet').classList.remove('show'); }
+$('detailSheet').addEventListener('click', e => {
+  if (e.target === $('detailSheet')) closeDetail();
+});
+
+// ============================================================
+// 初始化
+// ============================================================
+renderTasks();
+updateStats();
+</script>
+<script src="theme-runtime.js"></script>
+</body>
+</html>
