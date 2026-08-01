@@ -379,6 +379,80 @@
   .section:nth-of-type(1) { animation-delay: .06s; }
   .section:nth-of-type(2) { animation-delay: .12s; }
   .section:nth-of-type(3) { animation-delay: .18s; }
+
+  /* ============ PWA 全屏适配 ============ */
+  /* 在真实手机/PWA模式下：取消手机外框，全屏铺满 */
+  @media (max-width: 500px), (display-mode: standalone), (display-mode: fullscreen) {
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .iphone {
+      width: 100vw !important;
+      height: 100vh !important;
+      min-height: 100vh !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+    }
+    .screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      min-height: 100vh !important;
+      border-radius: 0 !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    /* 状态栏固定顶部 */
+    .statusbar {
+      position: relative !important;
+      flex-shrink: 0 !important;
+      padding-top: env(safe-area-inset-top, 0px) !important;
+      z-index: 50 !important;
+    }
+    /* 内容区可滚动 */
+    .content {
+      position: relative !important;
+      flex: 1 !important;
+      height: auto !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    /* Tab bar 固定底部 */
+    .tabbar {
+      position: fixed !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+      z-index: 90 !important;
+    }
+    .home-indicator {
+      bottom: max(8px, env(safe-area-inset-bottom, 8px)) !important;
+    }
+    /* Dynamic Island 在 PWA 模式下隐藏（真机有自己的状态栏） */
+    .island {
+      display: none !important;
+    }
+    /* glow 保持 */
+    .glow { pointer-events: none !important; }
+  }
+  /* 桌面浏览器预览：保留手机外框 */
+  @media (min-width: 501px) and (hover: hover) {
+    html, body {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 32px 16px !important;
+    }
+  }
+
 </style>
 <script src="theme-inline.js"></script>
 <script src="storage.js"></script>
