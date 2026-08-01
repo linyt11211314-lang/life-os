@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0E0E0F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="我的生活 OS">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="我的生活 OS">
+  <meta name="description" content="一个为认真生活的人打造的个人操作系统。管理待办、记录生活、规划财富、追踪周期、记录灵感。">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+
+<title>空间 · 我的生活 OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     设计系统（锁定规范）
+     ============================================================ */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0E0E0F; --bg-2: #16161A;
+    --card: #F8F5EE; --card-2: #1C1C20;
+    --yellow: #DFFF00; --yellow-deep: #C4E600;
+    --purple: #8B5CF6; --purple-deep: #7C3AED;
+    --purple-soft: rgba(139,92,246,0.16);
+    --text: #F8F5EE; --text-sub: #9A9AA2; --text-dim: #6B6B72;
+    --line: rgba(255,255,255,0.07);
+    --r-lg: 28px; --r-md: 20px; --r-sm: 12px;
+  }
+  html, body {
+    font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+    background: #050506; color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 32px 16px;
+  }
+
+  /* ============ iPhone Frame ============ */
+  .iphone {
+    position: relative; width: 393px; height: 852px;
+    background: #000; border-radius: 56px; padding: 12px;
+    box-shadow: 0 0 0 2px #2a2a2c, 0 0 0 14px #0a0a0b,
+      0 50px 90px -20px rgba(223,255,0,0.08), 0 30px 70px -10px rgba(0,0,0,0.85);
+    flex-shrink: 0;
+  }
+  .screen {
+    position: relative; width: 100%; height: 100%;
+    background: linear-gradient(165deg, #141416 0%, #0E0E10 45%, #111114 100%);
+    border-radius: 44px; overflow: hidden; isolation: isolate;
+  }
+  .glow { position: absolute; border-radius: 50%; filter: blur(70px); z-index: 0; pointer-events: none; }
+  .glow-y { width: 240px; height: 240px; background: rgba(223,255,0,0.18); top: -60px; right: -70px; }
+  .glow-p { width: 200px; height: 200px; background: rgba(139,92,246,0.22); top: 180px; left: -80px; }
+  .glow-y2 { width: 180px; height: 180px; background: rgba(223,255,0,0.08); bottom: 160px; right: -60px; }
+
+  .island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 125px; height: 37px; background: #000; border-radius: 20px; z-index: 100; }
+
+  .statusbar {
+    position: relative; z-index: 50; height: 54px; padding: 0 28px 6px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .statusbar .icons { display:flex; align-items:center; gap:6px; }
+  .statusbar svg { display:block; }
+
+  .content {
+    position: relative; z-index: 10;
+    height: calc(100% - 54px - 96px);
+    overflow-y: auto; overflow-x: hidden;
+    padding: 4px 20px 24px; scrollbar-width: none;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* ============ 通用 ============ */
+  .page-head { padding: 8px 2px 0; }
+  .page-title { font-size: 30px; font-weight: 800; line-height: 1.1; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .page-title .accent { color: var(--yellow); font-style: italic; }
+  .page-sub { font-size: 13px; color: var(--text-sub); font-weight: 400; letter-spacing: 0.3px; }
+
+  .section { margin-top: 28px; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; padding: 0 2px;
+  }
+  .section-title {
+    font-size: 15px; font-weight: 700; letter-spacing: -0.1px;
+    display: flex; align-items: center; gap: 8px; color: var(--text-sub);
+  }
+  .section-title .emoji { font-size: 17px; }
+
+  /* ============ 入口卡片 ============ */
+  .entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .entry-grid.single { grid-template-columns: 1fr; }
+
+  .entry-card {
+    border-radius: var(--r-md); padding: 18px 16px;
+    position: relative; overflow: hidden; cursor: pointer;
+    transition: transform .2s ease;
+    min-height: 108px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .entry-card:active { transform: scale(0.97); }
+  .entry-card.yellow { background: linear-gradient(140deg, #DFFF00 0%, #C4E600 100%); color: #0E0E10; border: none; }
+  .entry-card.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; border: none; }
+  .entry-card.light { background: var(--card); color: #0E0E10; border: none; }
+  .entry-card.dark { background: var(--card-2); border: 1px solid var(--line); color: var(--text); }
+
+  .entry-card .corner {
+    position: absolute; width: 60px; height: 60px; border-radius: 50%;
+    top: -20px; right: -20px;
+  }
+  .entry-card.yellow .corner { background: rgba(14,14,16,0.08); }
+  .entry-card.purple .corner { background: rgba(255,255,255,0.12); }
+  .entry-card.light .corner { background: rgba(14,14,16,0.04); }
+  .entry-card.dark .corner { background: rgba(255,255,255,0.05); }
+
+  .entry-top { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2; }
+  .entry-emoji { font-size: 28px; line-height: 1; }
+  .entry-arrow {
+    font-size: 18px; font-weight: 700; opacity: 0.35;
+  }
+  .entry-body { position: relative; z-index: 2; }
+  .entry-name { font-size: 15px; font-weight: 800; letter-spacing: -0.2px; margin-bottom: 3px; }
+  .entry-desc { font-size: 11px; font-weight: 500; opacity: 0.65; }
+
+  /* 单列宽卡 */
+  .entry-card.wide { min-height: 72px; }
+  .entry-card.wide .entry-top { flex-direction: row; align-items: center; gap: 14px; }
+  .entry-card.wide .entry-emoji { font-size: 26px; }
+  .entry-card.wide .entry-body { flex: 1; }
+  .entry-card.wide .entry-name { margin-bottom: 2px; }
+
+  /* ============ Tab Bar ============ */
+  .tabbar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 96px;
+    background: rgba(14,14,16,0.82);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--line);
+    display: flex; align-items: flex-start; justify-content: space-around;
+    padding: 12px 16px 0; z-index: 90;
+  }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-dim); font-size: 10px; font-weight: 600; padding-top: 6px; cursor: pointer; }
+  .tab.active { color: var(--yellow); }
+  .tab-center { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding-top: 0; }
+  .tab-plus {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--yellow-deep) 100%);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: -18px; cursor: pointer;
+    box-shadow: 0 8px 20px -4px rgba(223,255,0,0.5), 0 0 0 6px rgba(14,14,16,0.9);
+    transition: transform .15s;
+  }
+  .tab-plus:active { transform: scale(0.92) rotate(90deg); }
+  .home-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; background: var(--text); border-radius: 100px; opacity: 0.9; z-index: 95; }
+
+  /* 入场 */
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .page-head { animation: rise .5s ease both; }
+  .section { animation: rise .5s ease both; }
+  .section:nth-of-type(1) { animation-delay: .08s; }
+  .section:nth-of-type(2) { animation-delay: .16s; }
+  .section:nth-of-type(3) { animation-delay: .24s; }
+  .section:nth-of-type(4) { animation-delay: .32s; }
+</style>
+<script src="theme-inline.js"></script>
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+</head>
+<body>
+<div class="iphone">
+  <div class="screen">
+    <div class="glow glow-y"></div>
+    <div class="glow glow-p"></div>
+    <div class="glow glow-y2"></div>
+    <div class="island"></div>
+
+    <!-- Status Bar -->
+    <div class="statusbar">
+      <span>22:54</span>
+      <div class="icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- 标题 -->
+      <div class="page-head">
+        <div class="page-title"><span class="accent">空间</span></div>
+        <div class="page-sub">收藏生活 · 管理人生</div>
+      </div>
+
+      <!-- 🌿 生活 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="emoji">🌿</span>生活</div>
+        </div>
+        <div class="entry-grid">
+          <div class="entry-card yellow">
+            <div class="corner"></div>
+            <div class="entry-top">
+              <span class="entry-emoji">🐱</span>
+              <span class="entry-arrow">›</span>
+            </div>
+            <div class="entry-body">
+              <div class="entry-name">我的伙伴</div>
+              <div class="entry-desc">陪伴记录 · 健康守护</div>
+            </div>
+          </div>
+
+          <div class="entry-card purple">
+            <div class="corner"></div>
+            <div class="entry-top">
+              <span class="entry-emoji">🌸</span>
+              <span class="entry-arrow" style="color:#fff">›</span>
+            </div>
+            <div class="entry-body">
+              <div class="entry-name">生理周期</div>
+              <div class="entry-desc">了解自己 · 温柔管理</div>
+            </div>
+          </div>
+
+          <div class="entry-card light">
+            <div class="corner"></div>
+            <div class="entry-top">
+              <span class="entry-emoji">📷</span>
+              <span class="entry-arrow">›</span>
+            </div>
+            <div class="entry-body">
+              <div class="entry-name">生活记录</div>
+              <div class="entry-desc">碎片时刻 · 真实回忆</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 💰 规划 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="emoji">💰</span>规划</div>
+        </div>
+        <div class="entry-grid">
+          <div class="entry-card dark">
+            <div class="corner"></div>
+            <div class="entry-top">
+              <span class="entry-emoji">💰</span>
+              <span class="entry-arrow">›</span>
+            </div>
+            <div class="entry-body">
+              <div class="entry-name">财富规划</div>
+              <div class="entry-desc">规划资金 · 实现目标</div>
+            </div>
+          </div>
+
+          <div class="entry-card yellow">
+            <div class="corner"></div>
+            <div class="entry-top">
+              <span class="entry-emoji">🛒</span>
+              <span class="entry-arrow">›</span>
+            </div>
+            <div class="entry-body">
+              <div class="entry-name">消费决策</div>
+              <div class="entry-desc">理性选择 · 买得值得</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 💡 思考 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="emoji">💡</span>思考</div>
+        </div>
+        <div class="entry-grid single">
+          <div class="entry-card purple">
+            <div class="corner"></div>
+            <div class="entry-top">
+              <span class="entry-emoji">💡</span>
+              <span class="entry-arrow" style="color:#fff">›</span>
+            </div>
+            <div class="entry-body">
+              <div class="entry-name">灵感空间</div>
+              <div class="entry-desc">记录想法 · 保存灵感 · 第二大脑</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🧰 工具 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="emoji">🧰</span>工具</div>
+        </div>
+        <div class="entry-grid single">
+          <div class="entry-card dark wide">
+            <div class="corner"></div>
+            <div class="entry-top">
+              <span class="entry-emoji">📌</span>
+              <div class="entry-body">
+                <div class="entry-name">待办清单</div>
+                <div class="entry-desc">记录临时事项 · 设置优先级 · 完成归档</div>
+              </div>
+              <span class="entry-arrow" style="color:var(--yellow)">›</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tabbar">
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>首页</span>
+      </div>
+      <div class="tab active">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span>空间</span>
+      </div>
+      <div class="tab-center">
+        <div class="tab-plus">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>记录</span>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>我的</span>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+</div>
+<script src="theme-runtime.js"></script>
+<script src="storage.js"></script>
+<script src="pwa.js"></script>
+</body>
+</html>
