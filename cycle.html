@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0E0E0F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="我的生活 OS">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="我的生活 OS">
+  <meta name="description" content="一个为认真生活的人打造的个人操作系统。管理待办、记录生活、规划财富、追踪周期、记录灵感。">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+
+<title>生理周期 · 我的生活 OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     设计系统（锁定规范） + 周期页专属粉色变量
+     ============================================================ */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0E0E0F; --bg-2: #16161A;
+    --card: #F8F5EE; --card-2: #1C1C20;
+    --yellow: #DFFF00; --yellow-deep: #C4E600;
+    --purple: #8B5CF6; --purple-deep: #7C3AED;
+    --purple-soft: rgba(139,92,246,0.16);
+    --pink: #FF8FAB; --pink-deep: #E8688A; --pink-soft: rgba(255,143,171,0.15);
+    --text: #F8F5EE; --text-sub: #9A9AA2; --text-dim: #6B6B72;
+    --line: rgba(255,255,255,0.07);
+    --r-lg: 28px; --r-md: 20px; --r-sm: 12px;
+  }
+  html, body {
+    font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+    background: #050506; color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 32px 16px;
+  }
+
+  /* ============ iPhone Frame ============ */
+  .iphone {
+    position: relative; width: 393px; height: 852px;
+    background: #000; border-radius: 56px; padding: 12px;
+    box-shadow: 0 0 0 2px #2a2a2c, 0 0 0 14px #0a0a0b,
+      0 50px 90px -20px rgba(255,143,171,0.10), 0 30px 70px -10px rgba(0,0,0,0.85);
+    flex-shrink: 0;
+  }
+  .screen {
+    position: relative; width: 100%; height: 100%;
+    background: linear-gradient(165deg, #141416 0%, #0E0E10 45%, #111114 100%);
+    border-radius: 44px; overflow: hidden; isolation: isolate;
+  }
+  .glow { position: absolute; border-radius: 50%; filter: blur(70px); z-index: 0; pointer-events: none; }
+  .glow-pk { width: 240px; height: 240px; background: rgba(255,143,171,0.20); top: -60px; right: -70px; }
+  .glow-p { width: 200px; height: 200px; background: rgba(139,92,246,0.24); top: 200px; left: -80px; }
+  .glow-y2 { width: 180px; height: 180px; background: rgba(223,255,0,0.08); bottom: 180px; right: -60px; }
+
+  .island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 125px; height: 37px; background: #000; border-radius: 20px; z-index: 100; }
+
+  .statusbar {
+    position: relative; z-index: 50; height: 54px; padding: 0 28px 6px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .statusbar .icons { display:flex; align-items:center; gap:6px; }
+  .statusbar svg { display:block; }
+
+  .content {
+    position: relative; z-index: 10;
+    height: calc(100% - 54px - 96px);
+    overflow-y: auto; overflow-x: hidden;
+    padding: 4px 20px 24px; scrollbar-width: none;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* ============ 通用 ============ */
+  .page-head { padding: 8px 2px 0; }
+  .page-title { font-size: 30px; font-weight: 800; line-height: 1.1; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .page-title .accent { color: var(--pink); font-style: italic; }
+  .page-sub { font-size: 13px; color: var(--text-sub); font-weight: 400; letter-spacing: 0.3px; }
+
+  .section { margin-top: 24px; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 0 2px; }
+  .section-title { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 8px; }
+  .section-title .bar { width: 3px; height: 14px; background: var(--pink); border-radius: 2px; }
+  .section-more { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+
+  .tag { font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 100px; letter-spacing: 0.3px; display: inline-flex; align-items: center; gap: 4px; }
+
+  /* ============ 周期状态卡 ============ */
+  .cycle-card {
+    margin-top: 18px;
+    background: linear-gradient(145deg, #1C1C20 0%, #161619 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: 24px 22px;
+    position: relative; overflow: hidden;
+  }
+  .cycle-card::before {
+    content: ''; position: absolute; width: 180px; height: 180px;
+    background: rgba(255,143,171,0.22); border-radius: 50%;
+    top: -70px; right: -50px; filter: blur(30px);
+  }
+  .cycle-card::after {
+    content: ''; position: absolute; width: 120px; height: 120px;
+    background: rgba(139,92,246,0.12); border-radius: 50%;
+    bottom: -40px; left: -30px; filter: blur(25px);
+  }
+
+  .cycle-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    position: relative; z-index: 2; margin-bottom: 20px;
+  }
+  .cycle-day-block { flex: 1; }
+  .cycle-day-label { font-size: 11px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px; }
+  .cycle-day-num { font-size: 42px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; margin-bottom: 4px; }
+  .cycle-day-num .unit { font-size: 16px; font-weight: 600; color: var(--text-sub); margin-left: 4px; }
+  .cycle-day-sub { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+
+  .phase-badge {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    flex-shrink: 0;
+  }
+  .phase-ring {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: conic-gradient(var(--pink) 0% 35%, rgba(255,255,255,0.06) 35% 100%);
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .phase-ring::before {
+    content: ''; position: absolute; inset: 5px; background: #1C1C20; border-radius: 50%;
+  }
+  .phase-ring .emoji { position: relative; z-index: 2; font-size: 22px; }
+  .phase-name {
+    font-size: 11px; font-weight: 700; color: var(--pink);
+    background: var(--pink-soft); border: 1px solid rgba(255,143,171,0.25);
+    padding: 4px 10px; border-radius: 100px;
+  }
+
+  .cycle-next {
+    position: relative; z-index: 2;
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    border-radius: 16px; padding: 14px 16px;
+  }
+  .cycle-next-ico {
+    width: 38px; height: 38px; border-radius: 12px;
+    background: var(--pink-soft); display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .cycle-next-text { flex: 1; }
+  .cycle-next-label { font-size: 10px; font-weight: 700; color: var(--text-sub); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 2px; }
+  .cycle-next-val { font-size: 15px; font-weight: 700; }
+  .cycle-next-val .days { color: var(--pink); font-weight: 800; }
+  .cycle-next-date { font-size: 11px; color: var(--text-sub); font-weight: 600; }
+
+  /* ============ 周期日历 ============ */
+  .cal-card {
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: var(--r-md); padding: 18px 16px 14px;
+  }
+  .cal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .cal-month { font-size: 16px; font-weight: 800; letter-spacing: -0.2px; }
+  .cal-nav { display: flex; gap: 8px; }
+  .cal-nav-btn {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: var(--text-sub);
+  }
+
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+  }
+  .cal-dow {
+    font-size: 10px; font-weight: 700; color: var(--text-dim);
+    text-align: center; padding: 6px 0; letter-spacing: 0.3px;
+  }
+  .cal-cell {
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; border-radius: 10px;
+    position: relative; cursor: pointer; transition: all .15s;
+  }
+  .cal-cell.empty { opacity: 0; pointer-events: none; }
+  .cal-cell.period { background: rgba(255,143,171,0.15); color: var(--pink); font-weight: 700; }
+  .cal-cell.period.predicted { background: rgba(255,143,171,0.08); color: rgba(255,143,171,0.6); border: 1px dashed rgba(255,143,171,0.3); }
+  .cal-cell.ovulation { background: rgba(223,255,0,0.12); color: var(--yellow); font-weight: 700; }
+  .cal-cell.ovulation::after {
+    content: ''; position: absolute; bottom: 4px; width: 4px; height: 4px;
+    border-radius: 50%; background: var(--yellow);
+  }
+  .cal-cell.today {
+    background: var(--yellow) !important; color: #0E0E10 !important; font-weight: 800;
+    box-shadow: 0 4px 12px -2px rgba(223,255,0,0.4);
+  }
+  .cal-cell.today::after { background: #0E0E10 !important; }
+  .cal-cell:active { transform: scale(0.92); }
+
+  .cal-legend {
+    display: flex; gap: 14px; margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid var(--line); flex-wrap: wrap;
+  }
+  .cal-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; color: var(--text-sub); }
+  .cal-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .cal-legend-dot.period { background: rgba(255,143,171,0.5); }
+  .cal-legend-dot.pred { background: transparent; border: 1px dashed rgba(255,143,171,0.5); }
+  .cal-legend-dot.ovu { background: var(--yellow); }
+  .cal-legend-dot.today { background: var(--yellow); box-shadow: 0 0 0 2px rgba(223,255,0,0.2); }
+
+  /* ============ 经期记录 ============ */
+  .period-list { display: flex; flex-direction: column; gap: 10px; }
+  .period-card {
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: var(--r-md); padding: 15px 16px;
+    display: flex; align-items: center; gap: 14px; cursor: pointer;
+    transition: transform .2s;
+  }
+  .period-card:active { transform: scale(0.98); }
+  .period-card.light { background: var(--card); border: none; color: #0E0E10; }
+  .period-ico {
+    width: 44px; height: 44px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .period-card .period-ico { background: var(--pink-soft); }
+  .period-card.light .period-ico { background: rgba(255,143,171,0.12); }
+  .period-body { flex: 1; min-width: 0; }
+  .period-dates { font-size: 14px; font-weight: 700; letter-spacing: -0.1px; margin-bottom: 4px; }
+  .period-meta { display: flex; gap: 10px; font-size: 11px; font-weight: 600; opacity: 0.6; }
+  .period-meta .sep { opacity: 0.4; }
+  .period-flow { flex-shrink: 0; display: flex; gap: 3px; }
+  .flow-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.12); }
+  .period-card.light .flow-dot { background: rgba(14,14,16,0.1); }
+  .flow-dot.active { background: var(--pink); }
+  .period-card.light .flow-dot.active { background: var(--pink-deep); }
+  .flow-label { font-size: 10px; font-weight: 700; color: var(--pink); margin-top: 4px; text-align: center; }
+  .period-card.light .flow-label { color: var(--pink-deep); }
+
+  /* ============ 身体状态 ============ */
+  .body-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .body-card {
+    border-radius: var(--r-md); padding: 16px;
+    position: relative; overflow: hidden;
+  }
+  .body-card.dark { background: var(--card-2); border: 1px solid var(--line); color: var(--text); }
+  .body-card.pink { background: linear-gradient(140deg, #FF8FAB 0%, #E8688A 100%); color: #fff; }
+  .body-card.yellow { background: linear-gradient(140deg, #DFFF00 0%, #C4E600 100%); color: #0E0E10; }
+  .body-card.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; }
+  .body-head { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
+  .body-emoji { font-size: 16px; }
+  .body-label { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; opacity: 0.7; }
+  .body-value { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
+  .body-stars { display: flex; gap: 2px; margin-top: 2px; }
+  .body-stars .star { font-size: 14px; }
+  .body-stars .star.on { opacity: 1; }
+  .body-stars .star.off { opacity: 0.25; }
+  .body-sub { font-size: 10px; font-weight: 600; opacity: 0.6; margin-top: 4px; }
+
+  /* ============ 经期日记 ============ */
+  .diary-list { display: flex; flex-direction: column; gap: 12px; }
+  .diary-card {
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: var(--r-md); padding: 16px; overflow: hidden;
+  }
+  .diary-card.pink { background: linear-gradient(140deg, rgba(255,143,171,0.12) 0%, rgba(232,104,138,0.08) 100%); border-color: rgba(255,143,171,0.2); }
+  .diary-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .diary-date-pill {
+    font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 100px;
+    background: var(--pink-soft); color: var(--pink);
+  }
+  .diary-mood { font-size: 16px; margin-left: auto; }
+  .diary-text { font-size: 13px; color: var(--text); font-weight: 500; line-height: 1.6; }
+  .diary-text .hl { color: var(--pink); font-weight: 700; }
+  .diary-img { width: 100%; height: 120px; object-fit: cover; border-radius: 14px; margin-top: 10px; display: block; }
+  .diary-add {
+    border: 1px dashed var(--line); border-radius: var(--r-md); padding: 18px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    color: var(--text-dim); font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  /* ============ 周期趋势 ============ */
+  .trend-card {
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: var(--r-md); padding: 18px 16px;
+  }
+  .trend-stats { display: flex; gap: 10px; margin-bottom: 16px; }
+  .trend-stat { flex: 1; text-align: center; }
+  .trend-stat .v { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+  .trend-stat .v.pk { color: var(--pink); }
+  .trend-stat .v.y { color: var(--yellow); }
+  .trend-stat .l { font-size: 10px; color: var(--text-sub); font-weight: 600; margin-top: 2px; }
+
+  .trend-chart { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; height: 80px; padding: 0 4px; }
+  .trend-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .trend-bar {
+    width: 100%; max-width: 24px; border-radius: 8px 8px 3px 3px;
+    background: linear-gradient(to top, var(--pink) 0%, rgba(255,143,171,0.4) 100%);
+    position: relative; transition: height .5s ease;
+  }
+  .trend-bar.avg { background: linear-gradient(to top, var(--yellow) 0%, rgba(223,255,0,0.3) 100%); }
+  .trend-bar-val { font-size: 9px; font-weight: 700; color: var(--text-sub); position: absolute; top: -14px; left: 50%; transform: translateX(-50%); }
+  .trend-bar-label { font-size: 9px; font-weight: 600; color: var(--text-dim); }
+
+  .trend-summary {
+    display: flex; align-items: center; gap: 8px; margin-top: 16px;
+    padding-top: 14px; border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--text-sub); font-weight: 500;
+  }
+  .trend-summary .badge {
+    font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 100px;
+    background: rgba(223,255,0,0.12); color: var(--yellow);
+  }
+
+  /* ============ 健康提醒 ============ */
+  .remind-list { display: flex; flex-direction: column; gap: 10px; }
+  .remind-card {
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: var(--r-md); padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .remind-ico {
+    width: 40px; height: 40px; border-radius: 13px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+  .remind-ico.pk { background: var(--pink-soft); }
+  .remind-ico.y { background: rgba(223,255,0,0.12); }
+  .remind-ico.p { background: rgba(139,92,246,0.16); }
+  .remind-body { flex: 1; min-width: 0; }
+  .remind-title { font-size: 14px; font-weight: 700; letter-spacing: -0.1px; margin-bottom: 3px; }
+  .remind-desc { font-size: 11px; color: var(--text-sub); font-weight: 500; }
+  .remind-toggle {
+    width: 42px; height: 25px; border-radius: 100px;
+    background: var(--pink); position: relative; flex-shrink: 0; cursor: pointer;
+  }
+  .remind-toggle::after {
+    content: ''; position: absolute; top: 2.5px; right: 2.5px;
+    width: 20px; height: 20px; border-radius: 50%; background: #fff;
+  }
+  .remind-toggle.off { background: rgba(255,255,255,0.12); }
+  .remind-toggle.off::after { right: auto; left: 2.5px; background: var(--text-sub); }
+
+  /* ============ Tab Bar ============ */
+  .tabbar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 96px;
+    background: rgba(14,14,16,0.82);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--line);
+    display: flex; align-items: flex-start; justify-content: space-around;
+    padding: 12px 16px 0; z-index: 90;
+  }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-dim); font-size: 10px; font-weight: 600; padding-top: 6px; cursor: pointer; }
+  .tab.active { color: var(--yellow); }
+  .tab-center { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding-top: 0; }
+  .tab-plus {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--yellow-deep) 100%);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: -18px; cursor: pointer;
+    box-shadow: 0 8px 20px -4px rgba(223,255,0,0.5), 0 0 0 6px rgba(14,14,16,0.9);
+  }
+  .home-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; background: var(--text); border-radius: 100px; opacity: 0.9; z-index: 95; }
+
+  /* 入场 */
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .cycle-card { animation: rise .5s ease both; }
+  .section { animation: rise .5s ease both; }
+  .section:nth-of-type(1) { animation-delay: .06s; }
+  .section:nth-of-type(2) { animation-delay: .12s; }
+  .section:nth-of-type(3) { animation-delay: .18s; }
+  .section:nth-of-type(4) { animation-delay: .24s; }
+  .section:nth-of-type(5) { animation-delay: .30s; }
+  .section:nth-of-type(6) { animation-delay: .36s; }
+</style>
+<script src="theme-inline.js"></script>
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+</head>
+<body>
+<div class="iphone">
+  <div class="screen">
+    <div class="glow glow-pk"></div>
+    <div class="glow glow-p"></div>
+    <div class="glow glow-y2"></div>
+    <div class="island"></div>
+
+    <!-- Status Bar -->
+    <div class="statusbar">
+      <span>22:18</span>
+      <div class="icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- 标题 -->
+      <div class="page-head">
+        <div class="page-title"><span class="accent">生理</span>周期</div>
+        <div class="page-sub">了解自己 · 温柔管理生活</div>
+      </div>
+
+      <!-- 周期状态卡 -->
+      <div class="cycle-card">
+        <div class="cycle-top">
+          <div class="cycle-day-block">
+            <div class="cycle-day-label">当前周期</div>
+            <div class="cycle-day-num" id="cycleDayNum">18<span class="unit">天</span></div>
+            <div class="cycle-day-sub" id="cycleDaySub">上次经期开始 7月14日</div>
+          </div>
+          <div class="phase-badge">
+            <div class="phase-ring"><span class="emoji" id="cyclePhaseEmoji">🌙</span></div>
+            <div class="phase-name" id="cyclePhaseName">黄体期</div>
+          </div>
+        </div>
+        <div class="cycle-next">
+          <div class="cycle-next-ico">🌸</div>
+          <div class="cycle-next-text">
+            <div class="cycle-next-label">距离下次经期</div>
+            <div class="cycle-next-val">预计还有 <span class="days" id="cycleDaysToNext">10</span> 天</div>
+          </div>
+          <div class="cycle-next-date" id="cycleNextDate">8月11日</div>
+        </div>
+      </div>
+
+      <!-- 第一模块：周期日历 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>周期日历</div>
+          <div class="section-more">8月 ›</div>
+        </div>
+        <div class="cal-card">
+          <div class="cal-head">
+            <div class="cal-month">2026年8月</div>
+            <div class="cal-nav">
+              <div class="cal-nav-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </div>
+              <div class="cal-nav-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div><div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div><div class="cal-dow">六</div>
+            <!-- 8月1日从周六开始 -->
+            <div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div>
+            <div class="cal-cell today">1</div>
+            <div class="cal-cell">2</div><div class="cal-cell">3</div><div class="cal-cell">4</div><div class="cal-cell">5</div><div class="cal-cell">6</div><div class="cal-cell">7</div><div class="cal-cell">8</div>
+            <div class="cal-cell">9</div><div class="cal-cell">10</div>
+            <div class="cal-cell period predicted">11</div><div class="cal-cell period predicted">12</div><div class="cal-cell period predicted">13</div><div class="cal-cell period predicted">14</div><div class="cal-cell period predicted">15</div>
+            <div class="cal-cell">16</div><div class="cal-cell">17</div>
+            <div class="cal-cell">18</div><div class="cal-cell">19</div><div class="cal-cell">20</div>
+            <div class="cal-cell ovulation">21</div>
+            <div class="cal-cell">22</div><div class="cal-cell">23</div><div class="cal-cell">24</div>
+            <div class="cal-cell">25</div><div class="cal-cell">26</div><div class="cal-cell">27</div><div class="cal-cell">28</div><div class="cal-cell">29</div><div class="cal-cell">30</div><div class="cal-cell">31</div>
+          </div>
+          <div class="cal-legend">
+            <div class="cal-legend-item"><span class="cal-legend-dot today"></span>今天</div>
+            <div class="cal-legend-item"><span class="cal-legend-dot pred"></span>预计经期</div>
+            <div class="cal-legend-item"><span class="cal-legend-dot ovu"></span>排卵日</div>
+            <div class="cal-legend-item"><span class="cal-legend-dot period"></span>历史经期</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第二模块：经期记录 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>经期记录</div>
+          <div class="section-more">+ 记录</div>
+        </div>
+        <div class="period-list" id="periodList">
+          <div class="period-card light">
+            <div class="period-ico">🌷</div>
+            <div class="period-body">
+              <div class="period-dates">7月14日 - 7月19日</div>
+              <div class="period-meta">
+                <span>周期 28 天</span><span class="sep">·</span><span>持续 6 天</span>
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <div class="period-flow">
+                <span class="flow-dot active"></span><span class="flow-dot active"></span><span class="flow-dot"></span>
+              </div>
+              <div class="flow-label">正常</div>
+            </div>
+          </div>
+          <div class="period-card">
+            <div class="period-ico">🌷</div>
+            <div class="period-body">
+              <div class="period-dates">6月16日 - 6月21日</div>
+              <div class="period-meta">
+                <span>周期 29 天</span><span class="sep">·</span><span>持续 6 天</span>
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <div class="period-flow">
+                <span class="flow-dot active"></span><span class="flow-dot active"></span><span class="flow-dot active"></span>
+              </div>
+              <div class="flow-label">较多</div>
+            </div>
+          </div>
+          <div class="period-card">
+            <div class="period-ico">🌷</div>
+            <div class="period-body">
+              <div class="period-dates">5月18日 - 5月22日</div>
+              <div class="period-meta">
+                <span>周期 27 天</span><span class="sep">·</span><span>持续 5 天</span>
+              </div>
+            </div>
+            <div style="text-align:center;">
+              <div class="period-flow">
+                <span class="flow-dot active"></span><span class="flow-dot"></span><span class="flow-dot"></span>
+              </div>
+              <div class="flow-label" style="color:var(--text-sub)">少量</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第三模块：身体状态 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>身体状态</div>
+          <div class="section-more">今日</div>
+        </div>
+        <div class="body-grid">
+          <div class="body-card pink">
+            <div class="body-head"><span class="body-emoji">💗</span><span class="body-label">今日心情</span></div>
+            <div class="body-stars">
+              <span class="star on">⭐</span><span class="star on">⭐</span><span class="star on">⭐</span><span class="star on">⭐</span><span class="star off">⭐</span>
+            </div>
+            <div class="body-sub" style="color:rgba(255,255,255,0.7)">心情不错</div>
+          </div>
+          <div class="body-card yellow">
+            <div class="body-head"><span class="body-emoji">⚡</span><span class="body-label">精力状态</span></div>
+            <div class="body-stars">
+              <span class="star on">⭐</span><span class="star on">⭐</span><span class="star on">⭐</span><span class="star off">⭐</span><span class="star off">⭐</span>
+            </div>
+            <div class="body-sub" style="color:rgba(14,14,16,0.55)">一般偏上</div>
+          </div>
+          <div class="body-card dark">
+            <div class="body-head"><span class="body-emoji">😴</span><span class="body-label">睡眠情况</span></div>
+            <div class="body-value">7.2<span style="font-size:13px;font-weight:600;color:var(--text-sub);margin-left:3px;">小时</span></div>
+            <div class="body-sub">入睡 23:40 · 醒来 07:00</div>
+          </div>
+          <div class="body-card purple">
+            <div class="body-head"><span class="body-emoji">⚖️</span><span class="body-label">体重变化</span></div>
+            <div class="body-value">52.3<span style="font-size:13px;font-weight:600;opacity:0.7;margin-left:3px;">kg</span></div>
+            <div class="body-sub" style="color:rgba(255,255,255,0.7)">↘ 较上月 -0.4kg</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第四模块：经期日记 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>经期日记</div>
+          <div class="section-more">+ 写日记</div>
+        </div>
+        <div class="diary-list">
+          <div class="diary-card pink">
+            <div class="diary-head">
+              <span class="diary-date-pill">7月16日 · 经期第3天</span>
+              <span class="diary-mood">🤗</span>
+            </div>
+            <div class="diary-text">
+              今天喝了红糖姜茶，暖暖的很舒服。下午在沙发上看了两小时书，<span class="hl">身体虽然有点疲惫但心情很平静</span>。晚上早早就困了，好好休息。
+            </div>
+            <img class="diary-img" src="https://picsum.photos/seed/period-tea/400/240" alt="">
+          </div>
+          <div class="diary-card">
+            <div class="diary-head">
+              <span class="diary-date-pill" style="background:rgba(255,255,255,0.06);color:var(--text-sub)">7月15日 · 经期第2天</span>
+              <span class="diary-mood">😌</span>
+            </div>
+            <div class="diary-text">
+              比昨天好多了，中午出门散了会步，风吹着很舒服。给自己煮了碗红枣粥，<span class="hl">认真照顾自己的感觉真好</span>。
+            </div>
+          </div>
+          <div class="diary-add">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            记录今天的感受
+          </div>
+        </div>
+      </div>
+
+      <!-- 第五模块：周期趋势 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>周期趋势</div>
+          <div class="section-more">近6次</div>
+        </div>
+        <div class="trend-card">
+          <div class="trend-stats">
+            <div class="trend-stat"><div class="v pk" id="cycleAvgCycle">28</div><div class="l">平均周期(天)</div></div>
+            <div class="trend-stat"><div class="v y" id="cycleAvgDuration">5.5</div><div class="l">平均持续(天)</div></div>
+            <div class="trend-stat"><div class="v" style="color:var(--text)" id="cycleFluctuation">±1.0</div><div class="l">波动范围</div></div>
+          </div>
+          <div class="trend-chart">
+            <div class="trend-bar-wrap">
+              <div class="trend-bar" style="height:62%"><span class="trend-bar-val">27</span></div>
+              <div class="trend-bar-label">3月</div>
+            </div>
+            <div class="trend-bar-wrap">
+              <div class="trend-bar" style="height:68%"><span class="trend-bar-val">29</span></div>
+              <div class="trend-bar-label">4月</div>
+            </div>
+            <div class="trend-bar-wrap">
+              <div class="trend-bar" style="height:58%"><span class="trend-bar-val">27</span></div>
+              <div class="trend-bar-label">5月</div>
+            </div>
+            <div class="trend-bar-wrap">
+              <div class="trend-bar" style="height:72%"><span class="trend-bar-val">29</span></div>
+              <div class="trend-bar-label">6月</div>
+            </div>
+            <div class="trend-bar-wrap">
+              <div class="trend-bar" style="height:66%"><span class="trend-bar-val">28</span></div>
+              <div class="trend-bar-label">7月</div>
+            </div>
+            <div class="trend-bar-wrap">
+              <div class="trend-bar avg" style="height:64%"><span class="trend-bar-val">28</span></div>
+              <div class="trend-bar-label" style="color:var(--yellow)">均值</div>
+            </div>
+          </div>
+          <div class="trend-summary">
+            <span class="badge">稳定</span>
+            近6次周期长度在 27-29 天之间，规律性良好
+          </div>
+        </div>
+      </div>
+
+      <!-- 第六模块：健康提醒 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>健康提醒</div>
+          <div class="section-more">管理</div>
+        </div>
+        <div class="remind-list">
+          <div class="remind-card">
+            <div class="remind-ico pk">🌸</div>
+            <div class="remind-body">
+              <div class="remind-title">预计经期提醒</div>
+              <div class="remind-desc">提前 3 天提醒 · 8月8日</div>
+            </div>
+            <div class="remind-toggle"></div>
+          </div>
+          <div class="remind-card">
+            <div class="remind-ico y">🔄</div>
+            <div class="remind-body">
+              <div class="remind-title">周期阶段提醒</div>
+              <div class="remind-desc">进入新阶段时通知</div>
+            </div>
+            <div class="remind-toggle"></div>
+          </div>
+          <div class="remind-card">
+            <div class="remind-ico p">🛍️</div>
+            <div class="remind-body">
+              <div class="remind-title">用品准备提醒</div>
+              <div class="remind-desc">经期前 5 天提醒备货</div>
+            </div>
+            <div class="remind-toggle off"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tabbar">
+      <div class="tab active">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>首页</span>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span>任务</span>
+      </div>
+      <div class="tab-center">
+        <div class="tab-plus">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>记录</span>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>我的</span>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+</div>
+<script src="theme-runtime.js"></script>
+<script src="storage.js"></script>
+<script src="pwa.js"></script>
+<script>
+(function () {
+  'use strict';
+  if (!window.LifeOS) return;
+  var cy = LifeOS.get('cycle');
+  if (!cy) return;
+
+  // 状态卡
+  setHTML('cycleDayNum', cy.currentDay + '<span class="unit">天</span>');
+  setText('cycleDaySub', '上次经期开始 ' + (cy.lastPeriodStart || ''));
+  setText('cyclePhaseEmoji', cy.phaseEmoji || '🌙');
+  setText('cyclePhaseName', cy.phase || '');
+  setText('cycleDaysToNext', cy.daysToNext != null ? String(cy.daysToNext) : '—');
+  setText('cycleNextDate', cy.nextDate || '');
+
+  // 经期记录列表
+  if (cy.history && cy.history.length) {
+    var pl = document.getElementById('periodList');
+    if (pl) {
+      var flowMap = { light: { dots: 1, label: '少量', sub: true }, normal: { dots: 2, label: '正常', sub: false }, heavy: { dots: 3, label: '较多', sub: false } };
+      pl.innerHTML = cy.history.map(function (h) {
+        var fl = flowMap[h.flow] || flowMap.normal;
+        var dots = '';
+        for (var i = 0; i < 3; i++) {
+          dots += '<span class="flow-dot' + (i < fl.dots ? ' active' : '') + '"></span>';
+        }
+        var labelStyle = fl.sub ? ' style="color:var(--text-sub)"' : '';
+        return '<div class="period-card ' + (h.cardType || '') + '">' +
+          '<div class="period-ico">🌷</div>' +
+          '<div class="period-body">' +
+            '<div class="period-dates">' + esc(h.dates) + '</div>' +
+            '<div class="period-meta">' +
+              '<span>周期 ' + h.cycle + ' 天</span><span class="sep">·</span><span>持续 ' + h.duration + ' 天</span>' +
+            '</div>' +
+          '</div>' +
+          '<div style="text-align:center;">' +
+            '<div class="period-flow">' + dots + '</div>' +
+            '<div class="flow-label"' + labelStyle + '>' + fl.label + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+
+  // 趋势统计
+  setText('cycleAvgCycle', String(cy.avgCycle || 28));
+  setText('cycleAvgDuration', String(cy.avgDuration || 5.5));
+  setText('cycleFluctuation', cy.fluctuation || '±1.0');
+
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+  function setHTML(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = val;
+  }
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+})();
+</script>
+</body>
+</html>
