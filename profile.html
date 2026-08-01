@@ -82,20 +82,42 @@
 
   html, body {
     font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
-    background: #050506; color: var(--text);
+    background: #050506;
+    color: var(--text);
     -webkit-font-smoothing: antialiased;
-    min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    padding: 32px 16px;
-    transition: background .4s ease;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
   }
+  @media (display-mode: standalone), (display-mode: fullscreen) { body { padding: 0; } }
 
   /* ============ iPhone Frame ============ */
   .iphone {
-    position: relative; width: 393px; height: 852px;
-    background: #000; border-radius: 56px; padding: 12px;
-    box-shadow: 0 0 0 2px #2a2a2c, 0 0 0 14px #0a0a0b,
-      0 50px 90px -20px rgba(var(--accent-rgb),0.08), 0 30px 70px -10px rgba(0,0,0,0.85);
+    position: relative;
+    width: 100%;
+    max-width: 100vw;
+    min-height: 100vh;
+    background: #000;
     flex-shrink: 0;
+  }
+  @media (min-width: 500px) and (hover: hover) {
+    .iphone {
+      width: 393px;
+      min-height: 852px;
+      border-radius: 56px;
+      padding: 12px;
+      box-shadow: 0 0 0 2px #2a2a2c, 0 0 0 14px #0a0a0b,
+        0 50px 90px -20px rgba(223,255,0,0.08), 0 30px 70px -10px rgba(0,0,0,0.85);
+    }
+    .screen { border-radius: 44px; }
+  }
+  .screen {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(165deg, #141416 0%, #0E0E10 45%, #111114 100%);
+    overflow: hidden;
+    isolation: isolate;
   }
   .screen {
     position: relative; width: 100%; height: 100%;
