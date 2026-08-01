@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0E0E0F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="我的生活 OS">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="我的生活 OS">
+  <meta name="description" content="一个为认真生活的人打造的个人操作系统。管理待办、记录生活、规划财富、追踪周期、记录灵感。">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+
+<title>我的生活 OS · App 页面框架</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     设计系统（锁定自首页 index.html，所有页面共享）
+     ============================================================ */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0E0E0F;
+    --bg-2: #16161A;
+    --card: #F8F5EE;
+    --card-2: #1C1C20;
+    --yellow: #DFFF00;
+    --yellow-deep: #C4E600;
+    --purple: #8B5CF6;
+    --purple-deep: #7C3AED;
+    --purple-soft: rgba(139,92,246,0.16);
+    --text: #F8F5EE;
+    --text-sub: #9A9AA2;
+    --text-dim: #6B6B72;
+    --line: rgba(255,255,255,0.07);
+    --r-lg: 28px;
+    --r-md: 20px;
+    --r-sm: 12px;
+  }
+  html, body {
+    font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+    background: #050506;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  body {
+    padding: 40px 24px 60px;
+  }
+
+  /* 页面舞台：横向排列多个 iPhone */
+  .stage {
+    display: flex;
+    gap: 36px;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .stage-item { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .stage-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-sub);
+    letter-spacing: 0.5px;
+  }
+  .stage-label .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: #0E0E10;
+    font-size: 12px;
+    font-weight: 800;
+    margin-right: 8px;
+  }
+
+  /* ============ iPhone 14 Pro Frame ============ */
+  .iphone {
+    position: relative;
+    width: 100%;
+    max-width: 100vw;
+    min-height: 100vh;
+    background: #000;
+    flex-shrink: 0;
+  }
+  /* 桌面浏览器预览：保留手机外框 */
+  @media (min-width: 500px) and (hover: hover) {
+    .iphone {
+    position: relative;
+    width: 100%;
+    max-width: 100vw;
+    min-height: 100vh;
+    background: #000;
+    flex-shrink: 0;
+  }
+  @media (min-width: 500px) and (hover: hover) {
+    .iphone {
+      width: 393px;
+      min-height: 852px;
+      border-radius: 56px;
+      padding: 12px;
+      box-shadow: 0 0 0 2px #2a2a2c, 0 0 0 14px #0a0a0b,
+        0 50px 90px -20px rgba(223,255,0,0.08), 0 30px 70px -10px rgba(0,0,0,0.85);
+    }
+    .screen { border-radius: 44px; }
+  }
+  .screen {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(165deg, #141416 0%, #0E0E10 45%, #111114 100%);
+    overflow: hidden;
+    isolation: isolate;
+  }
+    .screen { border-radius: 44px; }
+  }
+  .screen {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(165deg, #141416 0%, #0E0E10 45%, #111114 100%);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  /* PWA 模式下的 iPhone 安全区 */
+  @supports (padding: max(0px)) {
+    body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+  }
+  /* ambient glow */
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    z-index: 0;
+    pointer-events: none;
+  }
+  .glow-y { width: 240px; height: 240px; background: rgba(223,255,0,0.22); top: -60px; right: -70px; }
+  .glow-p { width: 200px; height: 200px; background: rgba(139,92,246,0.28); top: 180px; left: -80px; }
+  .glow-y2 { width: 180px; height: 180px; background: rgba(223,255,0,0.10); bottom: 120px; right: -60px; }
+
+  /* Dynamic Island */
+  .island {
+    position: absolute; top: 11px; left: 50%;
+    transform: translateX(-50%);
+    width: 125px; height: 37px;
+    background: #000; border-radius: 20px; z-index: 100;
+  }
+
+  /* Status bar */
+  .statusbar {
+    position: relative; z-index: 50;
+    height: 54px; padding: 0 28px 6px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .statusbar .icons { display:flex; align-items:center; gap:6px; }
+  .statusbar svg { display:block; }
+
+  /* Scroll area */
+  .content {
+    position: relative; z-index: 10;
+    height: calc(100% - 54px - 96px);
+    overflow-y: auto; overflow-x: hidden;
+    padding: 4px 20px 24px;
+    scrollbar-width: none;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* ============ 通用：页面标题 ============ */
+  .page-head { padding: 8px 2px 0; }
+  .page-title {
+    font-size: 30px; font-weight: 800; line-height: 1.1;
+    letter-spacing: -0.5px; margin-bottom: 6px;
+  }
+  .page-title .accent { color: var(--yellow); font-style: italic; }
+  .page-sub {
+    font-size: 13px; color: var(--text-sub); font-weight: 400; letter-spacing: 0.3px;
+  }
+
+  /* ============ 通用：Section ============ */
+  .section { margin-top: 24px; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; padding: 0 2px;
+  }
+  .section-title {
+    font-size: 17px; font-weight: 700; letter-spacing: -0.2px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .bar { width: 3px; height: 14px; background: var(--yellow); border-radius: 2px; }
+  .section-more { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+
+  /* ============ 通用：Tab Bar ============ */
+  .tabbar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 96px;
+    background: rgba(14,14,16,0.82);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--line);
+    display: flex; align-items: flex-start; justify-content: space-around;
+    padding: 12px 16px 0; z-index: 90;
+  }
+  .tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: var(--text-dim); font-size: 10px; font-weight: 600; padding-top: 6px;
+  }
+  .tab.active { color: var(--yellow); }
+  .tab-center { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding-top: 0; }
+  .tab-plus {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--yellow-deep) 100%);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: -18px;
+    box-shadow: 0 8px 20px -4px rgba(223,255,0,0.5), 0 0 0 6px rgba(14,14,16,0.9);
+  }
+  .home-indicator {
+    position: absolute; bottom: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 134px; height: 5px;
+    background: var(--text); border-radius: 100px; opacity: 0.9; z-index: 95;
+  }
+
+  /* ============ 通用：网格卡片 ============ */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .gcard {
+    background: var(--card-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 16px; position: relative; overflow: hidden;
+    min-height: 112px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .gcard.light { background: var(--card); color: #0E0E10; border: none; }
+  .gcard.yellow { background: linear-gradient(140deg, #DFFF00 0%, #C4E600 100%); color: #0E0E10; border: none; }
+  .gcard.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; border: none; }
+  .gico {
+    width: 36px; height: 36px; border-radius: var(--r-sm);
+    background: rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+  }
+  .gcard.light .gico { background: rgba(14,14,16,0.07); }
+  .gcard.yellow .gico { background: rgba(14,14,16,0.1); }
+  .gcard.purple .gico { background: rgba(255,255,255,0.18); }
+  .gtitle { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 2px; }
+  .gdesc { font-size: 10.5px; color: var(--text-sub); font-weight: 500; line-height: 1.35; }
+  .gcard.light .gdesc { color: rgba(14,14,16,0.55); }
+  .gcard.yellow .gdesc { color: rgba(14,14,16,0.6); }
+  .gcard.purple .gdesc { color: rgba(255,255,255,0.78); }
+  .gcard .corner {
+    position: absolute; width: 60px; height: 60px; border-radius: 50%;
+    top: -20px; right: -20px; background: rgba(255,255,255,0.05);
+  }
+  .gcard.yellow .corner { background: rgba(14,14,16,0.08); }
+  .gcard.purple .corner { background: rgba(255,255,255,0.12); }
+  .gcard .mini {
+    position: absolute; bottom: 12px; right: 12px;
+    font-size: 10px; font-weight: 700; color: var(--text-dim);
+  }
+  .gcard.light .mini { color: rgba(14,14,16,0.4); }
+  .gcard.yellow .mini { color: rgba(14,14,16,0.5); }
+  .gcard.purple .mini { color: rgba(255,255,255,0.6); }
+
+  /* ============ 通用：任务卡 ============ */
+  .plan-card {
+    background: var(--card); border-radius: var(--r-md);
+    padding: 16px; position: relative; overflow: hidden;
+  }
+  .plan-card.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; }
+
+  /* ============ 通用：tag / chip ============ */
+  .tag {
+    font-size: 10px; font-weight: 700;
+    padding: 4px 9px; border-radius: 100px;
+    background: rgba(14,14,16,0.08); color: #0E0E10; letter-spacing: 0.3px;
+  }
+  .tag.y { background: var(--yellow); color: #0E0E10; }
+  .tag.p { background: var(--purple); color: #fff; }
+  .tag.dark { background: rgba(14,14,16,0.8); color: #fff; }
+  .tag.outline { background: transparent; border: 1px solid var(--line); color: var(--text-sub); }
+
+  /* ============ 通用：进度条 ============ */
+  .ptrack {
+    height: 6px; background: rgba(14,14,16,0.1); border-radius: 100px; overflow: hidden; margin-bottom: 8px;
+  }
+  .pfill { height: 100%; background: #0E0E10; border-radius: 100px; }
+  .pfill.y { background: var(--yellow); }
+  .pfill.p { background: var(--purple); }
+
+  /* ============ 入场动效 ============ */
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============================================================
+     页面1：首页（保持已锁定设计，简化结构）
+     ============================================================ */
+  .hero { display: flex; justify-content: space-between; align-items: flex-start; padding-top: 6px; }
+  .hero-left { flex: 1; }
+  .greeting {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 500; color: var(--yellow);
+    background: rgba(223,255,0,0.08); border: 1px solid rgba(223,255,0,0.22);
+    padding: 6px 12px; border-radius: 100px; margin-bottom: 14px;
+  }
+  .greeting .dot {
+    width: 6px; height: 6px; background: var(--yellow); border-radius: 50%;
+    box-shadow: 0 0 8px var(--yellow);
+  }
+  .hero h1 { font-size: 32px; font-weight: 800; line-height: 1.1; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .hero h1 .accent { color: var(--yellow); font-style: italic; font-weight: 800; }
+  .hero .sub { font-size: 13px; color: var(--text-sub); font-weight: 400; letter-spacing: 0.3px; }
+  .deco { position: relative; width: 56px; height: 56px; flex-shrink: 0; margin-top: 4px; }
+  .deco .ring { position: absolute; border-radius: 50%; border: 1.5px solid; }
+  .deco .r1 { inset: 0; border-color: rgba(223,255,0,0.5); }
+  .deco .r2 { inset: 10px; border-color: rgba(139,92,246,0.6); border-style: dashed; }
+  .deco .core {
+    position: absolute; inset: 20px;
+    background: linear-gradient(135deg, var(--yellow), var(--purple));
+    border-radius: 50%; box-shadow: 0 0 16px rgba(223,255,0,0.5);
+  }
+  .deco .orbit {
+    position: absolute; width: 8px; height: 8px; background: var(--yellow);
+    border-radius: 50%; top: -2px; left: 50%; transform: translateX(-50%);
+    box-shadow: 0 0 10px var(--yellow);
+  }
+  .notif {
+    position: absolute; top: 4px; right: 0;
+    width: 44px; height: 44px; border-radius: 14px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+  }
+  .notif .badge {
+    position: absolute; top: 10px; right: 11px;
+    width: 8px; height: 8px; background: var(--yellow); border-radius: 50%;
+    border: 2px solid #0E0E10;
+  }
+
+  .status-card {
+    margin-top: 22px;
+    background: linear-gradient(135deg, #DFFF00 0%, #C4E600 100%);
+    border-radius: var(--r-lg); padding: 22px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    position: relative; overflow: hidden;
+    box-shadow: 0 12px 30px -10px rgba(223,255,0,0.4);
+  }
+  .status-card::before {
+    content: ''; position: absolute; width: 140px; height: 140px;
+    background: rgba(139,92,246,0.25); border-radius: 50%;
+    top: -50px; right: -30px; filter: blur(20px);
+  }
+  .status-card::after {
+    content: ''; position: absolute; width: 60px; height: 60px;
+    border: 2px solid rgba(0,0,0,0.08); border-radius: 50%;
+    bottom: -30px; left: 40%;
+  }
+  .status-left { position: relative; z-index: 2; flex: 1; }
+  .status-date {
+    font-size: 12px; font-weight: 700; color: #0E0E10; opacity: 0.7;
+    letter-spacing: 0.5px; margin-bottom: 6px; text-transform: uppercase;
+  }
+  .status-text { font-size: 19px; font-weight: 800; color: #0E0E10; line-height: 1.25; letter-spacing: -0.3px; }
+  .energy { position: relative; z-index: 2; text-align: center; flex-shrink: 0; }
+  .energy-ring {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: conic-gradient(#0E0E10 78%, rgba(14,14,16,0.15) 0);
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .energy-ring::before {
+    content: ''; position: absolute; inset: 6px; background: var(--yellow); border-radius: 50%;
+  }
+  .energy-ring span { position: relative; font-size: 18px; font-weight: 800; color: #0E0E10; }
+  .energy-label { font-size: 10px; font-weight: 700; color: #0E0E10; opacity: 0.7; margin-top: 6px; letter-spacing: 0.5px; }
+
+  .plans { display: flex; gap: 12px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px 4px; scrollbar-width: none; }
+  .plans::-webkit-scrollbar { display: none; }
+  .plan-card.flex-card { flex: 0 0 200px; }
+  .plan-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .plan-ico {
+    width: 38px; height: 38px; border-radius: var(--r-sm);
+    background: rgba(14,14,16,0.08); display: flex; align-items: center; justify-content: center;
+  }
+  .plan-card.purple .plan-ico { background: rgba(255,255,255,0.16); }
+  .plan-card.purple .plan-name { color: #fff; }
+  .plan-card.purple .plan-meta { color: rgba(255,255,255,0.75); }
+  .plan-card.purple .ptrack { background: rgba(255,255,255,0.22); }
+  .plan-card.purple .pfill { background: var(--yellow); }
+  .plan-card.purple .tag { background: rgba(255,255,255,0.18); color: #fff; }
+  .plan-name { font-size: 15px; font-weight: 700; color: #0E0E10; margin-bottom: 4px; letter-spacing: -0.2px; }
+  .plan-meta { font-size: 11px; color: var(--text-dim); margin-bottom: 12px; font-weight: 500; }
+  .plan-card.purple .plan-meta { color: rgba(255,255,255,0.7); }
+  .plan-foot { display: flex; justify-content: space-between; align-items: center; }
+  .plan-pct { font-size: 13px; font-weight: 800; color: #0E0E10; }
+  .plan-card.purple .plan-pct { color: var(--yellow); }
+  .plan-btn {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--yellow);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .plan-card.purple .plan-btn-2 { background: #0E0E10; }
+
+  /* ============================================================
+     页面2：任务页
+     ============================================================ */
+  .filter-tabs {
+    display: flex; gap: 8px; margin: 18px 0 16px;
+  }
+  .ftab {
+    font-size: 13px; font-weight: 600;
+    padding: 9px 18px; border-radius: 100px;
+    background: var(--card-2); color: var(--text-sub);
+    border: 1px solid var(--line); white-space: nowrap;
+  }
+  .ftab.active { background: var(--yellow); color: #0E0E10; border-color: transparent; font-weight: 700; }
+  .ftab .count { font-size: 11px; opacity: 0.6; margin-left: 4px; }
+  .ftab.active .count { opacity: 0.7; }
+
+  .task-card {
+    background: var(--card); border-radius: var(--r-md);
+    padding: 16px; margin-bottom: 12px; position: relative; overflow: hidden;
+  }
+  .task-card.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; }
+  .task-card.dark { background: var(--card-2); border: 1px solid var(--line); color: var(--text); }
+  .task-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .task-ico {
+    width: 40px; height: 40px; border-radius: var(--r-sm);
+    background: rgba(14,14,16,0.08); display: flex; align-items: center; justify-content: center;
+  }
+  .task-card.purple .task-ico { background: rgba(255,255,255,0.16); }
+  .task-card.dark .task-ico { background: rgba(255,255,255,0.08); }
+  .task-body { margin-bottom: 12px; }
+  .task-name { font-size: 16px; font-weight: 700; color: #0E0E10; margin-bottom: 4px; letter-spacing: -0.2px; }
+  .task-card.purple .task-name { color: #fff; }
+  .task-card.dark .task-name { color: var(--text); }
+  .task-meta { font-size: 11.5px; color: var(--text-dim); font-weight: 500; }
+  .task-card.purple .task-meta { color: rgba(255,255,255,0.7); }
+  .task-card.dark .task-meta { color: var(--text-sub); }
+  .task-foot { display: flex; justify-content: space-between; align-items: center; }
+  .task-pct { font-size: 14px; font-weight: 800; color: #0E0E10; }
+  .task-card.purple .task-pct { color: var(--yellow); }
+  .task-card.dark .task-pct { color: var(--text); }
+  .task-card.dark .ptrack { background: rgba(255,255,255,0.1); }
+  .task-card.dark .pfill { background: var(--yellow); }
+
+  /* 任务统计条 */
+  .task-stats {
+    display: flex; gap: 10px; margin-bottom: 4px;
+  }
+  .stat-pill {
+    flex: 1; background: var(--card-2); border: 1px solid var(--line);
+    border-radius: 16px; padding: 14px;
+  }
+  .stat-pill .val { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .stat-pill .val.y { color: var(--yellow); }
+  .stat-pill .val.p { color: var(--purple); }
+  .stat-pill .lab { font-size: 10.5px; color: var(--text-sub); font-weight: 500; margin-top: 2px; }
+
+  /* ============================================================
+     页面3：+ 快速创建（弹出菜单）
+     ============================================================ */
+  .create-screen { position: relative; }
+  .create-overlay {
+    position: absolute; inset: 0; z-index: 80;
+    background: rgba(8,8,10,0.55); backdrop-filter: blur(8px);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 0 20px 120px;
+  }
+  .create-title {
+    text-align: center; margin-bottom: 22px;
+    font-size: 15px; font-weight: 600; color: var(--text-sub); letter-spacing: 0.3px;
+  }
+  .create-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .create-item {
+    background: var(--card); border-radius: var(--r-md);
+    padding: 20px 16px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    animation: rise .4s ease both;
+  }
+  .create-item:nth-child(1) { animation-delay: .05s; }
+  .create-item:nth-child(2) { animation-delay: .1s; }
+  .create-item:nth-child(3) { animation-delay: .15s; }
+  .create-item:nth-child(4) { animation-delay: .2s; }
+  .create-item.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; }
+  .create-item.yellow { background: linear-gradient(140deg, #DFFF00 0%, #C4E600 100%); color: #0E0E10; }
+  .create-item.dark { background: var(--card-2); border: 1px solid var(--line); color: var(--text); }
+  .create-ico {
+    width: 48px; height: 48px; border-radius: 16px;
+    background: rgba(14,14,16,0.08);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .create-item.purple .create-ico { background: rgba(255,255,255,0.18); }
+  .create-item.yellow .create-ico { background: rgba(14,14,16,0.1); }
+  .create-item.dark .create-ico { background: rgba(255,255,255,0.08); }
+  .create-name { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
+  .create-desc { font-size: 10.5px; opacity: 0.65; font-weight: 500; }
+  .create-close {
+    position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 85;
+  }
+
+  /* ============================================================
+     页面4：记录页（瀑布流）
+     ============================================================ */
+  .masonry { columns: 2; column-gap: 12px; }
+  .mcard {
+    break-inside: avoid; margin-bottom: 12px;
+    border-radius: var(--r-md); overflow: hidden;
+    background: var(--card-2); border: 1px solid var(--line);
+  }
+  .mcard.light { background: var(--card); color: #0E0E10; border: none; }
+  .mcard.yellow { background: linear-gradient(140deg, #DFFF00 0%, #C4E600 100%); color: #0E0E10; border: none; }
+  .mcard.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; border: none; }
+  .mcard-img {
+    width: 100%; display: block; background: var(--card-2);
+  }
+  .mcard-body { padding: 14px; }
+  .mcard-date {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    margin-bottom: 6px; text-transform: uppercase;
+  }
+  .mcard.light .mcard-date { color: rgba(14,14,16,0.5); }
+  .mcard.yellow .mcard-date { color: rgba(14,14,16,0.55); }
+  .mcard.purple .mcard-date { color: rgba(255,255,255,0.7); }
+  .mcard .mcard-date { color: var(--text-dim); }
+  .mcard-text {
+    font-size: 13px; font-weight: 600; line-height: 1.4; letter-spacing: -0.1px;
+  }
+  .mcard-sub {
+    font-size: 11px; font-weight: 500; margin-top: 4px; opacity: 0.7;
+  }
+  .mood-row { display: flex; align-items: center; gap: 8px; }
+  .mood-emoji {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .mcard.light .mood-emoji { background: rgba(14,14,16,0.08); }
+  .mcard.purple .mood-emoji { background: rgba(255,255,255,0.18); }
+  .mcard.yellow .mood-emoji { background: rgba(14,14,16,0.1); }
+  .mcard .mood-emoji { background: rgba(255,255,255,0.08); }
+
+  /* 记录页头部统计 */
+  .rec-stats {
+    display: flex; gap: 10px; margin: 16px 0 4px;
+  }
+  .rec-stat {
+    flex: 1; border-radius: 16px; padding: 12px 14px;
+    background: var(--card-2); border: 1px solid var(--line);
+  }
+  .rec-stat .v { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+  .rec-stat .v.y { color: var(--yellow); }
+  .rec-stat .v.p { color: var(--purple); }
+  .rec-stat .l { font-size: 10px; color: var(--text-sub); font-weight: 500; margin-top: 1px; }
+
+  /* 月份筛选 */
+  .month-chips { display: flex; gap: 8px; margin: 16px 0 14px; overflow-x: auto; scrollbar-width: none; }
+  .month-chips::-webkit-scrollbar { display: none; }
+  .mchip {
+    font-size: 12px; font-weight: 600;
+    padding: 7px 14px; border-radius: 100px;
+    background: var(--card-2); color: var(--text-sub); border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .mchip.active { background: var(--purple); color: #fff; border-color: transparent; }
+
+  /* ============================================================
+     页面5：我的页
+     ============================================================ */
+  .profile-hero {
+    margin-top: 14px;
+    background: linear-gradient(140deg, #1C1C20 0%, #16161A 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 22px 20px;
+    position: relative; overflow: hidden;
+  }
+  .profile-hero::before {
+    content: ''; position: absolute; width: 160px; height: 160px;
+    background: rgba(139,92,246,0.25); border-radius: 50%;
+    top: -60px; right: -40px; filter: blur(30px);
+  }
+  .profile-hero::after {
+    content: ''; position: absolute; width: 100px; height: 100px;
+    background: rgba(223,255,0,0.15); border-radius: 50%;
+    bottom: -40px; left: -20px; filter: blur(25px);
+  }
+  .profile-top {
+    display: flex; align-items: center; gap: 14px;
+    position: relative; z-index: 2;
+  }
+  .avatar {
+    width: 64px; height: 64px; border-radius: 20px;
+    background: linear-gradient(135deg, var(--yellow), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 800; color: #0E0E10;
+    box-shadow: 0 8px 20px -6px rgba(223,255,0,0.4);
+    flex-shrink: 0;
+  }
+  .profile-info { flex: 1; }
+  .profile-name { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 3px; }
+  .profile-id { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+  .profile-edit {
+    width: 36px; height: 36px; border-radius: 12px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .profile-bio {
+    position: relative; z-index: 2;
+    margin-top: 16px; font-size: 13px; color: var(--text-sub); line-height: 1.5;
+  }
+  .profile-stats {
+    display: flex; gap: 10px; margin-top: 18px;
+    position: relative; z-index: 2;
+  }
+  .ps {
+    flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    border-radius: 14px; padding: 12px 10px; text-align: center;
+  }
+  .ps .v { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+  .ps .v.y { color: var(--yellow); }
+  .ps .v.p { color: var(--purple); }
+  .ps .l { font-size: 10px; color: var(--text-sub); font-weight: 500; margin-top: 2px; }
+
+  .setting-list {
+    margin-top: 22px;
+  }
+  .setting-group {
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: var(--r-md); overflow: hidden; margin-bottom: 12px;
+  }
+  .setting-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 15px 16px; position: relative;
+  }
+  .setting-row + .setting-row::before {
+    content: ''; position: absolute; top: 0; left: 56px; right: 0;
+    height: 1px; background: var(--line);
+  }
+  .setting-ico {
+    width: 34px; height: 34px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .setting-ico.y { background: rgba(223,255,0,0.12); color: var(--yellow); }
+  .setting-ico.p { background: rgba(139,92,246,0.16); color: var(--purple); }
+  .setting-ico.w { background: rgba(255,255,255,0.06); color: var(--text); }
+  .setting-name { flex: 1; font-size: 14px; font-weight: 600; }
+  .setting-val { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+  .setting-arrow { color: var(--text-dim); }
+  .setting-toggle {
+    width: 42px; height: 25px; border-radius: 100px;
+    background: var(--yellow); position: relative; flex-shrink: 0;
+  }
+  .setting-toggle::after {
+    content: ''; position: absolute; top: 2.5px; right: 2.5px;
+    width: 20px; height: 20px; border-radius: 50%; background: #0E0E10;
+  }
+  .setting-toggle.off { background: rgba(255,255,255,0.12); }
+  .setting-toggle.off::after { right: auto; left: 2.5px; background: var(--text-sub); }
+</style>
+<script src="theme-inline.js"></script>
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+</head>
+<body>
+<div class="stage">
+
+  <!-- ============================================================
+       页面1：首页（保持锁定设计）
+       ============================================================ -->
+  <div class="stage-item">
+    <div class="stage-label"><span class="num">1</span>首页</div>
+    <div class="iphone">
+      <div class="screen">
+        <div class="glow glow-y"></div>
+        <div class="glow glow-p"></div>
+        <div class="glow glow-y2"></div>
+        <div class="island"></div>
+
+        <div class="statusbar">
+          <span>21:20</span>
+          <div class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="hero">
+            <div class="hero-left">
+              <div class="greeting"><span class="dot"></span>Hi，今天也要加油！</div>
+              <h1>我的<span class="accent">生活</span> OS</h1>
+              <div class="sub">认真生活 · 快乐记录 · 自在成长</div>
+            </div>
+            <div style="position:relative;width:56px;">
+              <div class="deco">
+                <div class="ring r1"></div>
+                <div class="ring r2"></div>
+                <div class="core"></div>
+                <div class="orbit"></div>
+              </div>
+              <div class="notif">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8F5EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+                <div class="badge"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-card">
+            <div class="status-left">
+              <div class="status-date">8月1日 · 周六</div>
+              <div class="status-text">今天也是<br>闪闪发光的一天</div>
+            </div>
+            <div class="energy">
+              <div class="energy-ring"><span>78%</span></div>
+              <div class="energy-label">今日能量</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <div class="section-title"><span class="bar"></span>今日计划</div>
+              <div class="section-more">全部 ›</div>
+            </div>
+            <div class="plans">
+              <div class="plan-card flex-card">
+                <div class="plan-top">
+                  <div class="plan-ico">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 12h11M6.5 17.5h11"/><circle cx="3" cy="6.5" r="1" fill="#0E0E10"/><circle cx="3" cy="12" r="1" fill="#0E0E10"/><circle cx="3" cy="17.5" r="1" fill="#0E0E10"/></svg>
+                  </div>
+                  <div class="tag">进行中</div>
+                </div>
+                <div class="plan-name">完成健身计划</div>
+                <div class="plan-meta">上肢训练 · 45分钟</div>
+                <div class="ptrack"><div class="pfill" style="width:65%"></div></div>
+                <div class="plan-foot">
+                  <div class="plan-pct">65%</div>
+                  <div class="plan-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                </div>
+              </div>
+              <div class="plan-card purple flex-card">
+                <div class="plan-top">
+                  <div class="plan-ico">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l10-4 10 4-10 4-10-4z"/><path d="M2 12l10 4 10-4"/><path d="M2 17l10 4 10-4"/></svg>
+                  </div>
+                  <div class="tag">学习中</div>
+                </div>
+                <div class="plan-name">学习新技能 30min</div>
+                <div class="plan-meta">设计思维 · 第3节</div>
+                <div class="ptrack"><div class="pfill" style="width:40%"></div></div>
+                <div class="plan-foot">
+                  <div class="plan-pct">40%</div>
+                  <div class="plan-btn plan-btn-2">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                </div>
+              </div>
+              <div class="plan-card flex-card">
+                <div class="plan-top">
+                  <div class="plan-ico">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+                  </div>
+                  <div class="tag">待开始</div>
+                </div>
+                <div class="plan-name">阅读 20 页</div>
+                <div class="plan-meta">《心流》· 第5章</div>
+                <div class="ptrack"><div class="pfill" style="width:0%"></div></div>
+                <div class="plan-foot">
+                  <div class="plan-pct">0%</div>
+                  <div class="plan-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <div class="section-title"><span class="bar"></span>核心管理</div>
+              <div class="section-more">编辑</div>
+            </div>
+            <div class="grid">
+              <div class="gcard yellow">
+                <div class="corner"></div>
+                <div class="gico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+                <div><div class="gtitle">我的伙伴</div><div class="gdesc">5 位同行者在线</div></div>
+                <div class="mini">›</div>
+              </div>
+              <div class="gcard light">
+                <div class="corner"></div>
+                <div class="gico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+                <div><div class="gtitle">财富规划</div><div class="gdesc">本月支出 ¥4,280</div></div>
+                <div class="mini">›</div>
+              </div>
+              <div class="gcard">
+                <div class="corner"></div>
+                <div class="gico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DFFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+                <div><div class="gtitle">购物清单</div><div class="gdesc">8 件待买 · 3 件已完成</div></div>
+                <div class="mini">›</div>
+              </div>
+              <div class="gcard purple">
+                <div class="corner"></div>
+                <div class="gico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></div>
+                <div><div class="gtitle">随心记录</div><div class="gdesc">今日已记 3 条心情</div></div>
+                <div class="mini">›</div>
+              </div>
+              <div class="gcard light">
+                <div class="corner"></div>
+                <div class="gico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+                <div><div class="gtitle">身体状态</div><div class="gdesc">心率 72 · 睡眠 7.5h</div></div>
+                <div class="mini">›</div>
+              </div>
+              <div class="gcard">
+                <div class="corner"></div>
+                <div class="gico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8F5EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+                <div><div class="gtitle">资料库</div><div class="gdesc">128 篇收藏待读</div></div>
+                <div class="mini">›</div>
+              </div>
+              <div class="gcard">
+                <div class="corner"></div>
+                <div class="gico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                <div><div class="gtitle">习惯追踪</div><div class="gdesc">连续打卡 21 天</div></div>
+                <div class="mini">›</div>
+              </div>
+              <div class="gcard">
+                <div class="corner"></div>
+                <div class="gico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DFFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+                <div><div class="gtitle">数据统计</div><div class="gdesc">本周成长 +12%</div></div>
+                <div class="mini">›</div>
+              </div>
+            </div>
+          </div>
+          <div style="height:16px"></div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>首页</span>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            <span>任务</span>
+          </div>
+          <div class="tab-center">
+            <div class="tab-plus">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>记录</span>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>我的</span>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       页面2：任务页
+       ============================================================ -->
+  <div class="stage-item">
+    <div class="stage-label"><span class="num">2</span>任务</div>
+    <div class="iphone">
+      <div class="screen">
+        <div class="glow glow-y"></div>
+        <div class="glow glow-p"></div>
+        <div class="island"></div>
+
+        <div class="statusbar">
+          <span>21:20</span>
+          <div class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="page-head">
+            <div class="page-title"><span class="accent">任务</span></div>
+            <div class="page-sub">管理目标，记录成长</div>
+          </div>
+
+          <!-- 统计 -->
+          <div class="task-stats" style="margin-top:18px;">
+            <div class="stat-pill">
+              <div class="val y">5</div>
+              <div class="lab">进行中</div>
+            </div>
+            <div class="stat-pill">
+              <div class="val p">12</div>
+              <div class="lab">已完成</div>
+            </div>
+            <div class="stat-pill">
+              <div class="val" style="color:var(--text)">3</div>
+              <div class="lab">待开始</div>
+            </div>
+          </div>
+
+          <!-- 分类 Tab -->
+          <div class="filter-tabs">
+            <div class="ftab active">全部<span class="count">20</span></div>
+            <div class="ftab">进行中<span class="count">5</span></div>
+            <div class="ftab">已完成<span class="count">12</span></div>
+          </div>
+
+          <!-- 任务卡片 -->
+          <div class="task-card">
+            <div class="task-head">
+              <div class="task-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 12h11M6.5 17.5h11"/><circle cx="3" cy="6.5" r="1" fill="#0E0E10"/><circle cx="3" cy="12" r="1" fill="#0E0E10"/><circle cx="3" cy="17.5" r="1" fill="#0E0E10"/></svg>
+              </div>
+              <div class="tag y">进行中</div>
+            </div>
+            <div class="task-body">
+              <div class="task-name">完成健身计划</div>
+              <div class="task-meta">健身 · 截止 8月1日 20:00</div>
+            </div>
+            <div class="ptrack"><div class="pfill y" style="width:65%"></div></div>
+            <div class="task-foot">
+              <div class="task-pct">65%</div>
+              <div class="tag outline">上肢训练</div>
+            </div>
+          </div>
+
+          <div class="task-card purple">
+            <div class="task-head">
+              <div class="task-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l10-4 10 4-10 4-10-4z"/><path d="M2 12l10 4 10-4"/><path d="M2 17l10 4 10-4"/></svg>
+              </div>
+              <div class="tag" style="background:rgba(255,255,255,0.18);color:#fff">学习中</div>
+            </div>
+            <div class="task-body">
+              <div class="task-name">学习新技能 30 分钟</div>
+              <div class="task-meta">学习 · 截止 8月1日 22:00</div>
+            </div>
+            <div class="ptrack" style="background:rgba(255,255,255,0.22)"><div class="pfill y" style="width:40%"></div></div>
+            <div class="task-foot">
+              <div class="task-pct">40%</div>
+              <div class="tag" style="background:rgba(255,255,255,0.18);color:#fff">设计思维</div>
+            </div>
+          </div>
+
+          <div class="task-card">
+            <div class="task-head">
+              <div class="task-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+              </div>
+              <div class="tag outline" style="background:rgba(14,14,16,0.08);color:#0E0E10;border:none">待开始</div>
+            </div>
+            <div class="task-body">
+              <div class="task-name">阅读 20 页</div>
+              <div class="task-meta">阅读 · 截止 8月2日 09:00</div>
+            </div>
+            <div class="ptrack"><div class="pfill" style="width:0%"></div></div>
+            <div class="task-foot">
+              <div class="task-pct">0%</div>
+              <div class="tag outline" style="background:rgba(14,14,16,0.08);color:#0E0E10;border:none">《心流》</div>
+            </div>
+          </div>
+
+          <div class="task-card dark">
+            <div class="task-head">
+              <div class="task-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DFFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div class="tag y">已完成</div>
+            </div>
+            <div class="task-body">
+              <div class="task-name">整理本周笔记</div>
+              <div class="task-meta">整理 · 完成于 7月31日</div>
+            </div>
+            <div class="ptrack" style="background:rgba(255,255,255,0.1)"><div class="pfill y" style="width:100%"></div></div>
+            <div class="task-foot">
+              <div class="task-pct">100%</div>
+              <div class="tag outline">笔记归档</div>
+            </div>
+          </div>
+
+          <div style="height:16px"></div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>首页</span>
+          </div>
+          <div class="tab active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            <span>任务</span>
+          </div>
+          <div class="tab-center">
+            <div class="tab-plus">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>记录</span>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>我的</span>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       页面3：+ 快速创建（弹出菜单态）
+       ============================================================ -->
+  <div class="stage-item">
+    <div class="stage-label"><span class="num">3</span>+ 快速创建</div>
+    <div class="iphone">
+      <div class="screen create-screen">
+        <div class="glow glow-y"></div>
+        <div class="glow glow-p"></div>
+        <div class="island"></div>
+
+        <div class="statusbar">
+          <span>21:20</span>
+          <div class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+          </div>
+        </div>
+
+        <!-- 背景透出首页缩略（虚化） -->
+        <div class="content" style="filter:blur(2px) brightness(0.6);pointer-events:none;">
+          <div class="hero">
+            <div class="hero-left">
+              <div class="greeting"><span class="dot"></span>Hi，今天也要加油！</div>
+              <h1>我的<span class="accent">生活</span> OS</h1>
+              <div class="sub">认真生活 · 快乐记录 · 自在成长</div>
+            </div>
+          </div>
+          <div class="status-card">
+            <div class="status-left">
+              <div class="status-date">8月1日 · 周六</div>
+              <div class="status-text">今天也是<br>闪闪发光的一天</div>
+            </div>
+            <div class="energy">
+              <div class="energy-ring"><span>78%</span></div>
+              <div class="energy-label">今日能量</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 弹出层 -->
+        <div class="create-overlay">
+          <div class="create-title">快速创建</div>
+          <div class="create-grid">
+            <div class="create-item yellow">
+              <div class="create-ico">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              </div>
+              <div class="create-name">新增任务</div>
+              <div class="create-desc">设定目标与截止</div>
+            </div>
+            <div class="create-item purple">
+              <div class="create-ico">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              </div>
+              <div class="create-name">记录心情</div>
+              <div class="create-desc">此刻感受</div>
+            </div>
+            <div class="create-item dark">
+              <div class="create-ico">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DFFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <div class="create-name">添加照片</div>
+              <div class="create-desc">定格瞬间</div>
+            </div>
+            <div class="create-item light">
+              <div class="create-ico">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </div>
+              <div class="create-name">记录想法</div>
+              <div class="create-desc">随手灵感</div>
+            </div>
+          </div>
+        </div>
+        <div class="create-close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F8F5EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>首页</span>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            <span>任务</span>
+          </div>
+          <div class="tab-center">
+            <div class="tab-plus" style="background:linear-gradient(135deg,#8B5CF6,#7C3AED);box-shadow:0 8px 20px -4px rgba(139,92,246,0.5),0 0 0 6px rgba(14,14,16,0.9);">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>记录</span>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>我的</span>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       页面4：记录页（瀑布流）
+       ============================================================ -->
+  <div class="stage-item">
+    <div class="stage-label"><span class="num">4</span>记录</div>
+    <div class="iphone">
+      <div class="screen">
+        <div class="glow glow-y"></div>
+        <div class="glow glow-p"></div>
+        <div class="island"></div>
+
+        <div class="statusbar">
+          <span>21:20</span>
+          <div class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="page-head">
+            <div class="page-title">我的<span class="accent">记录</span></div>
+            <div class="page-sub">生活碎片 · 真实时刻</div>
+          </div>
+
+          <div class="rec-stats">
+            <div class="rec-stat"><div class="v y">86</div><div class="l">本月记录</div></div>
+            <div class="rec-stat"><div class="v p">12</div><div class="l">连续天数</div></div>
+            <div class="rec-stat"><div class="v" style="color:var(--text)">3</div><div class="l">今日新增</div></div>
+          </div>
+
+          <div class="month-chips">
+            <div class="mchip">6月</div>
+            <div class="mchip">7月</div>
+            <div class="mchip active">8月</div>
+            <div class="mchip">本周</div>
+            <div class="mchip">今天</div>
+          </div>
+
+          <div class="masonry">
+            <!-- 图片卡 -->
+            <div class="mcard">
+              <img class="mcard-img" src="https://picsum.photos/seed/lifeos-sunset/400/520" alt="">
+              <div class="mcard-body">
+                <div class="mcard-date">8月1日 · 傍晚</div>
+                <div class="mcard-text">晚霞很温柔</div>
+              </div>
+            </div>
+            <!-- 心情卡 -->
+            <div class="mcard purple">
+              <div class="mcard-body">
+                <div class="mcard-date">8月1日 · 下午</div>
+                <div class="mood-row" style="margin-bottom:8px;">
+                  <div class="mood-emoji">✨</div>
+                  <div class="mcard-text" style="color:#fff">闪闪发光</div>
+                </div>
+                <div class="mcard-sub" style="color:rgba(255,255,255,0.7)">完成了一个小目标</div>
+              </div>
+            </div>
+            <!-- 文字卡 -->
+            <div class="mcard light">
+              <div class="mcard-body">
+                <div class="mcard-date">7月31日 · 夜</div>
+                <div class="mcard-text">今天的灵感：把生活当成产品来打磨</div>
+              </div>
+            </div>
+            <!-- 图片卡 -->
+            <div class="mcard">
+              <img class="mcard-img" src="https://picsum.photos/seed/lifeos-coffee/400/300" alt="">
+              <div class="mcard-body">
+                <div class="mcard-date">7月31日 · 上午</div>
+                <div class="mcard-text">早安咖啡</div>
+              </div>
+            </div>
+            <!-- 黄色卡 -->
+            <div class="mcard yellow">
+              <div class="mcard-body">
+                <div class="mcard-date">7月30日</div>
+                <div class="mcard-text">坚持打卡第 20 天</div>
+                <div class="mcard-sub" style="color:rgba(14,14,16,0.55)">习惯追踪</div>
+              </div>
+            </div>
+            <!-- 图片卡 -->
+            <div class="mcard">
+              <img class="mcard-img" src="https://picsum.photos/seed/lifeos-walk/400/440" alt="">
+              <div class="mcard-body">
+                <div class="mcard-date">7月30日 · 黄昏</div>
+                <div class="mcard-text">散步路上</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:16px"></div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>首页</span>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            <span>任务</span>
+          </div>
+          <div class="tab-center">
+            <div class="tab-plus">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+          </div>
+          <div class="tab active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>记录</span>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>我的</span>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       页面5：我的页
+       ============================================================ -->
+  <div class="stage-item">
+    <div class="stage-label"><span class="num">5</span>我的</div>
+    <div class="iphone">
+      <div class="screen">
+        <div class="glow glow-y"></div>
+        <div class="glow glow-p"></div>
+        <div class="island"></div>
+
+        <div class="statusbar">
+          <span>21:20</span>
+          <div class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="page-head">
+            <div class="page-title">我的</div>
+            <div class="page-sub">个人中心 · 设置与数据</div>
+          </div>
+
+          <!-- 个人信息卡 -->
+          <div class="profile-hero">
+            <div class="profile-top">
+              <div class="avatar">L</div>
+              <div class="profile-info">
+                <div class="profile-name">Lin</div>
+                <div class="profile-id">ID · life_os_2026</div>
+              </div>
+              <div class="profile-edit">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F8F5EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </div>
+            </div>
+            <div class="profile-bio">认真生活的人，生活也会认真待你 ✨</div>
+            <div class="profile-stats">
+              <div class="ps"><div class="v y">128</div><div class="l">连续天数</div></div>
+              <div class="ps"><div class="v p">86</div><div class="l">本月记录</div></div>
+              <div class="ps"><div class="v" style="color:var(--text)">21</div><div class="l">完成目标</div></div>
+            </div>
+          </div>
+
+          <!-- 设置入口 -->
+          <div class="setting-list">
+            <div class="setting-group">
+              <div class="setting-row">
+                <div class="setting-ico y">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/></svg>
+                </div>
+                <div class="setting-name">主题设置</div>
+                <div class="setting-val">深色 · 黄</div>
+                <svg class="setting-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="setting-row">
+                <div class="setting-ico p">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div class="setting-name">账号管理</div>
+                <svg class="setting-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="setting-row">
+                <div class="setting-ico w">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                </div>
+                <div class="setting-name">数据管理</div>
+                <div class="setting-val">已备份</div>
+                <svg class="setting-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <div class="setting-row">
+                <div class="setting-ico y">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+                </div>
+                <div class="setting-name">通知提醒</div>
+                <div class="setting-toggle"></div>
+              </div>
+              <div class="setting-row">
+                <div class="setting-ico p">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                </div>
+                <div class="setting-name">隐私与安全</div>
+                <svg class="setting-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="setting-row">
+                <div class="setting-ico w">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div class="setting-name">关于</div>
+                <div class="setting-val">v1.0.0</div>
+                <svg class="setting-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:16px"></div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>首页</span>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            <span>任务</span>
+          </div>
+          <div class="tab-center">
+            <div class="tab-plus">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+          </div>
+          <div class="tab">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>记录</span>
+          </div>
+          <div class="tab active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>我的</span>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="theme-runtime.js"></script>
+<script src="storage.js"></script>
+<script src="pwa.js"></script>
+</body>
+</html>
