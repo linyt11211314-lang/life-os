@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0E0E0F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="我的生活 OS">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="我的生活 OS">
+  <meta name="description" content="一个为认真生活的人打造的个人操作系统。管理待办、记录生活、规划财富、追踪周期、记录灵感。">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+
+<title>财富规划 · 我的生活 OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     设计系统（锁定规范）
+     ============================================================ */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0E0E0F; --bg-2: #16161A;
+    --card: #F8F5EE; --card-2: #1C1C20;
+    --yellow: #DFFF00; --yellow-deep: #C4E600;
+    --purple: #8B5CF6; --purple-deep: #7C3AED;
+    --purple-soft: rgba(139,92,246,0.16);
+    --text: #F8F5EE; --text-sub: #9A9AA2; --text-dim: #6B6B72;
+    --line: rgba(255,255,255,0.07);
+    --r-lg: 28px; --r-md: 20px; --r-sm: 12px;
+  }
+  html, body {
+    font-family: 'Plus Jakarta Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+    background: #050506; color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 32px 16px;
+  }
+
+  /* ============ iPhone Frame ============ */
+  .iphone {
+    position: relative; width: 393px; height: 852px;
+    background: #000; border-radius: 56px; padding: 12px;
+    box-shadow: 0 0 0 2px #2a2a2c, 0 0 0 14px #0a0a0b,
+      0 50px 90px -20px rgba(223,255,0,0.08), 0 30px 70px -10px rgba(0,0,0,0.85);
+    flex-shrink: 0;
+  }
+  .screen {
+    position: relative; width: 100%; height: 100%;
+    background: linear-gradient(165deg, #141416 0%, #0E0E10 45%, #111114 100%);
+    border-radius: 44px; overflow: hidden; isolation: isolate;
+  }
+  .glow { position: absolute; border-radius: 50%; filter: blur(70px); z-index: 0; pointer-events: none; }
+  .glow-y { width: 240px; height: 240px; background: rgba(223,255,0,0.20); top: -60px; right: -70px; }
+  .glow-p { width: 200px; height: 200px; background: rgba(139,92,246,0.26); top: 200px; left: -80px; }
+  .glow-y2 { width: 180px; height: 180px; background: rgba(223,255,0,0.08); bottom: 160px; right: -60px; }
+
+  .island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 125px; height: 37px; background: #000; border-radius: 20px; z-index: 100; }
+
+  .statusbar {
+    position: relative; z-index: 50; height: 54px; padding: 0 28px 6px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .statusbar .icons { display:flex; align-items:center; gap:6px; }
+  .statusbar svg { display:block; }
+
+  .content {
+    position: relative; z-index: 10;
+    height: calc(100% - 54px - 96px);
+    overflow-y: auto; overflow-x: hidden;
+    padding: 4px 20px 24px; scrollbar-width: none;
+  }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* ============ 通用 ============ */
+  .page-head { padding: 8px 2px 0; }
+  .page-title { font-size: 30px; font-weight: 800; line-height: 1.1; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .page-title .accent { color: var(--yellow); font-style: italic; }
+  .page-sub { font-size: 13px; color: var(--text-sub); font-weight: 400; letter-spacing: 0.3px; }
+
+  .section { margin-top: 24px; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 0 2px; }
+  .section-title { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 8px; }
+  .section-title .bar { width: 3px; height: 14px; background: var(--yellow); border-radius: 2px; }
+  .section-more { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+
+  .tag { font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 100px; letter-spacing: 0.3px; display: inline-flex; align-items: center; gap: 4px; }
+
+  /* ============ 资金状态卡 ============ */
+  .fund-card {
+    margin-top: 18px;
+    background: linear-gradient(140deg, #DFFF00 0%, #C4E600 100%);
+    border-radius: var(--r-lg); padding: 24px 22px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 14px 34px -10px rgba(223,255,0,0.4);
+  }
+  .fund-card::before {
+    content: ''; position: absolute; width: 160px; height: 160px;
+    background: rgba(139,92,246,0.22); border-radius: 50%;
+    top: -60px; right: -40px; filter: blur(22px);
+  }
+  .fund-card::after {
+    content: ''; position: absolute; width: 70px; height: 70px;
+    border: 2px solid rgba(0,0,0,0.07); border-radius: 50%;
+    bottom: -30px; left: 38%;
+  }
+  .fund-label {
+    font-size: 11px; font-weight: 700; color: #0E0E10; opacity: 0.6;
+    letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px;
+    position: relative; z-index: 2;
+  }
+  .fund-amount {
+    font-size: 38px; font-weight: 800; color: #0E0E10;
+    letter-spacing: -1px; line-height: 1; margin-bottom: 4px;
+    position: relative; z-index: 2;
+  }
+  .fund-amount .cur { font-size: 20px; font-weight: 700; opacity: 0.6; margin-right: 2px; }
+  .fund-change {
+    font-size: 12px; font-weight: 600; color: #0E0E10; opacity: 0.65;
+    position: relative; z-index: 2;
+  }
+
+  .fund-row {
+    display: flex; gap: 12px; margin-top: 20px;
+    position: relative; z-index: 2;
+  }
+  .fund-sub {
+    flex: 1; background: rgba(14,14,16,0.08); border-radius: 16px; padding: 14px 14px;
+  }
+  .fund-sub .sl { font-size: 10px; font-weight: 700; color: #0E0E10; opacity: 0.55; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .fund-sub .sv { font-size: 18px; font-weight: 800; color: #0E0E10; letter-spacing: -0.3px; }
+  .fund-sub .se { font-size: 10px; font-weight: 600; color: #0E0E10; opacity: 0.55; margin-top: 2px; }
+
+  /* ============ 资金分配 ============ */
+  .alloc-list { display: flex; flex-direction: column; gap: 10px; }
+  .alloc-card {
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: var(--r-md); padding: 15px 16px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: transform .2s ease;
+  }
+  .alloc-card:active { transform: scale(0.98); }
+  .alloc-emoji {
+    width: 42px; height: 42px; border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .alloc-emoji.y { background: rgba(223,255,0,0.12); }
+  .alloc-emoji.p { background: rgba(139,92,246,0.16); }
+  .alloc-emoji.w { background: rgba(255,255,255,0.06); }
+  .alloc-body { flex: 1; min-width: 0; }
+  .alloc-name { font-size: 14px; font-weight: 700; letter-spacing: -0.1px; margin-bottom: 5px; }
+  .alloc-bar { height: 5px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden; }
+  .alloc-fill { height: 100%; border-radius: 100px; }
+  .alloc-fill.y { background: var(--yellow); }
+  .alloc-fill.p { background: var(--purple); }
+  .alloc-fill.w { background: rgba(255,255,255,0.3); }
+  .alloc-right { text-align: right; flex-shrink: 0; }
+  .alloc-amount { font-size: 14px; font-weight: 800; letter-spacing: -0.2px; }
+  .alloc-pct { font-size: 10px; color: var(--text-sub); font-weight: 600; margin-top: 2px; }
+
+  /* ============ 未来目标 ============ */
+  .goal-list { display: flex; flex-direction: column; gap: 12px; }
+  .goal-card {
+    border-radius: var(--r-md); padding: 18px 16px;
+    position: relative; overflow: hidden;
+  }
+  .goal-card.light { background: var(--card); color: #0E0E10; }
+  .goal-card.dark { background: var(--card-2); border: 1px solid var(--line); color: var(--text); }
+  .goal-card.purple { background: linear-gradient(140deg, #8B5CF6 0%, #7C3AED 100%); color: #fff; }
+
+  .goal-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .goal-ico {
+    width: 40px; height: 40px; border-radius: 13px;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .goal-card.light .goal-ico { background: rgba(14,14,16,0.07); }
+  .goal-card.dark .goal-ico { background: rgba(255,255,255,0.08); }
+  .goal-card.purple .goal-ico { background: rgba(255,255,255,0.18); }
+
+  .goal-name { font-size: 15px; font-weight: 800; letter-spacing: -0.2px; margin-bottom: 3px; }
+  .goal-eta { font-size: 10.5px; opacity: 0.6; font-weight: 600; }
+  .goal-amounts { display: flex; align-items: baseline; gap: 6px; margin-bottom: 10px; }
+  .goal-current { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
+  .goal-card.light .goal-current { color: #0E0E10; }
+  .goal-card.dark .goal-current { color: var(--yellow); }
+  .goal-card.purple .goal-current { color: var(--yellow); }
+  .goal-target { font-size: 12px; font-weight: 600; opacity: 0.55; }
+  .goal-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .goal-bar { height: 7px; border-radius: 100px; overflow: hidden; flex: 1; }
+  .goal-card.light .goal-bar { background: rgba(14,14,16,0.08); }
+  .goal-card.dark .goal-bar { background: rgba(255,255,255,0.08); }
+  .goal-card.purple .goal-bar { background: rgba(255,255,255,0.2); }
+  .goal-fill { height: 100%; border-radius: 100px; }
+  .goal-card.light .goal-fill { background: #0E0E10; }
+  .goal-card.dark .goal-fill { background: var(--yellow); }
+  .goal-card.purple .goal-fill { background: var(--yellow); }
+  .goal-pct { font-size: 12px; font-weight: 800; flex-shrink: 0; min-width: 34px; text-align: right; }
+  .goal-card.light .goal-pct { color: #0E0E10; }
+  .goal-card.dark .goal-pct { color: var(--yellow); }
+  .goal-card.purple .goal-pct { color: var(--yellow); }
+
+  /* ============ 消费决策 ============ */
+  .decide-list { display: flex; flex-direction: column; gap: 12px; }
+  .decide-card {
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: var(--r-md); padding: 16px; position: relative; overflow: hidden;
+  }
+  .decide-card.yellow-edge { border-left: 3px solid var(--yellow); }
+  .decide-card.purple-edge { border-left: 3px solid var(--purple); }
+  .decide-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 10px; }
+  .decide-name { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; line-height: 1.3; }
+  .decide-price {
+    font-size: 17px; font-weight: 800; color: var(--yellow); flex-shrink: 0; letter-spacing: -0.3px;
+  }
+  .decide-reason {
+    font-size: 12px; color: var(--text-sub); font-weight: 500; line-height: 1.5;
+    background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px;
+  }
+  .decide-reason .label { color: var(--text-dim); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; margin-right: 4px; }
+  .decide-foot { display: flex; align-items: center; justify-content: space-between; }
+  .prio-pills { display: flex; gap: 6px; }
+  .prio-pill {
+    font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 100px;
+    background: rgba(255,255,255,0.06); color: var(--text-dim);
+  }
+  .prio-pill.active.high { background: var(--yellow); color: #0E0E10; }
+  .prio-pill.active.mid { background: var(--purple); color: #fff; }
+  .prio-pill.active.low { background: rgba(255,255,255,0.12); color: var(--text); }
+  .decide-action {
+    font-size: 11px; font-weight: 700; color: var(--text-sub);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .decide-action .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); }
+
+  /* ============ 财务思考 ============ */
+  .think-card {
+    background: linear-gradient(145deg, #1C1C20 0%, #161619 100%);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: 20px 18px;
+    position: relative; overflow: hidden;
+  }
+  .think-card::before {
+    content: ''; position: absolute; width: 140px; height: 140px;
+    background: rgba(139,92,246,0.18); border-radius: 50%;
+    top: -50px; right: -40px; filter: blur(28px);
+  }
+  .think-head {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    position: relative; z-index: 2;
+  }
+  .think-emoji { font-size: 18px; }
+  .think-title { font-size: 13px; font-weight: 700; }
+  .think-date { font-size: 10px; color: var(--text-dim); font-weight: 600; margin-left: auto; }
+  .think-text {
+    font-size: 13.5px; color: var(--text); font-weight: 500; line-height: 1.65;
+    position: relative; z-index: 2;
+  }
+  .think-text .hl { color: var(--yellow); font-weight: 700; }
+  .think-text .hp { color: var(--purple); font-weight: 700; }
+  .think-tags { display: flex; gap: 6px; margin-top: 14px; position: relative; z-index: 2; }
+  .think-tag {
+    font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 100px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--line); color: var(--text-sub);
+  }
+
+  .think-add {
+    margin-top: 12px;
+    background: rgba(255,255,255,0.03); border: 1px dashed var(--line);
+    border-radius: var(--r-md); padding: 16px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    color: var(--text-dim); font-size: 13px; font-weight: 600; cursor: pointer;
+    position: relative; z-index: 2;
+  }
+
+  /* ============ Tab Bar ============ */
+  .tabbar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 96px;
+    background: rgba(14,14,16,0.82);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--line);
+    display: flex; align-items: flex-start; justify-content: space-around;
+    padding: 12px 16px 0; z-index: 90;
+  }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-dim); font-size: 10px; font-weight: 600; padding-top: 6px; cursor: pointer; }
+  .tab.active { color: var(--yellow); }
+  .tab-center { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding-top: 0; }
+  .tab-plus {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--yellow-deep) 100%);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: -18px; cursor: pointer;
+    box-shadow: 0 8px 20px -4px rgba(223,255,0,0.5), 0 0 0 6px rgba(14,14,16,0.9);
+  }
+  .home-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; background: var(--text); border-radius: 100px; opacity: 0.9; z-index: 95; }
+
+  /* 入场 */
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .fund-card { animation: rise .5s ease both; }
+  .section { animation: rise .5s ease both; }
+  .section:nth-of-type(1) { animation-delay: .08s; }
+  .section:nth-of-type(2) { animation-delay: .16s; }
+  .section:nth-of-type(3) { animation-delay: .24s; }
+  .section:nth-of-type(4) { animation-delay: .32s; }
+</style>
+<script src="theme-inline.js"></script>
+  <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
+</head>
+<body>
+<div class="iphone">
+  <div class="screen">
+    <div class="glow glow-y"></div>
+    <div class="glow glow-p"></div>
+    <div class="glow glow-y2"></div>
+    <div class="island"></div>
+
+    <!-- Status Bar -->
+    <div class="statusbar">
+      <span>22:09</span>
+      <div class="icons">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="8" width="3" height="4" rx="1" fill="#F8F5EE"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#F8F5EE"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#F8F5EE"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#F8F5EE"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11.5l2-2.4a3 3 0 00-4 0l2 2.4z" fill="#F8F5EE"/><path d="M3.5 6.8a6.5 6.5 0 019 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#F8F5EE" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+        <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke="#F8F5EE" opacity="0.5" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.8" fill="#F8F5EE"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="#F8F5EE" opacity="0.5"/></svg>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- 标题 -->
+      <div class="page-head">
+        <div class="page-title"><span class="accent">财富</span>规划</div>
+        <div class="page-sub">规划资金 · 实现目标</div>
+      </div>
+
+      <!-- 资金状态卡 -->
+      <div class="fund-card">
+        <div class="fund-label">当前可规划资金</div>
+        <div class="fund-amount" id="fundAmount"><span class="cur">¥</span>28,560</div>
+        <div class="fund-change" id="fundChange">本月可调配 ¥6,200 · 储蓄完成 68%</div>
+        <div class="fund-row">
+          <div class="fund-sub">
+            <div class="sl">本月预算</div>
+            <div class="sv" id="fundBudget">¥8,000</div>
+            <div class="se" id="fundBudgetUsed">已分配 92%</div>
+          </div>
+          <div class="fund-sub">
+            <div class="sl">储蓄目标</div>
+            <div class="sv" id="fundSavingsTarget">¥50,000</div>
+            <div class="se" id="fundSavingsCurrent">已完成 ¥34,200</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第一模块：资金分配 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>资金分配</div>
+          <div class="section-more">编辑</div>
+        </div>
+        <div class="alloc-list" id="allocList">
+          <div class="alloc-card">
+            <div class="alloc-emoji y">🏠</div>
+            <div class="alloc-body">
+              <div class="alloc-name">固定支出</div>
+              <div class="alloc-bar"><div class="alloc-fill y" style="width:38%"></div></div>
+            </div>
+            <div class="alloc-right">
+              <div class="alloc-amount">¥3,050</div>
+              <div class="alloc-pct">38%</div>
+            </div>
+          </div>
+          <div class="alloc-card">
+            <div class="alloc-emoji p">🍚</div>
+            <div class="alloc-body">
+              <div class="alloc-name">日常生活</div>
+              <div class="alloc-bar"><div class="alloc-fill p" style="width:25%"></div></div>
+            </div>
+            <div class="alloc-right">
+              <div class="alloc-amount">¥2,000</div>
+              <div class="alloc-pct">25%</div>
+            </div>
+          </div>
+          <div class="alloc-card">
+            <div class="alloc-emoji w">🎮</div>
+            <div class="alloc-body">
+              <div class="alloc-name">娱乐消费</div>
+              <div class="alloc-bar"><div class="alloc-fill w" style="width:10%"></div></div>
+            </div>
+            <div class="alloc-right">
+              <div class="alloc-amount">¥800</div>
+              <div class="alloc-pct">10%</div>
+            </div>
+          </div>
+          <div class="alloc-card">
+            <div class="alloc-emoji p">📚</div>
+            <div class="alloc-body">
+              <div class="alloc-name">自我提升</div>
+              <div class="alloc-bar"><div class="alloc-fill p" style="width:12%"></div></div>
+            </div>
+            <div class="alloc-right">
+              <div class="alloc-amount">¥950</div>
+              <div class="alloc-pct">12%</div>
+            </div>
+          </div>
+          <div class="alloc-card">
+            <div class="alloc-emoji y">💰</div>
+            <div class="alloc-body">
+              <div class="alloc-name">储蓄计划</div>
+              <div class="alloc-bar"><div class="alloc-fill y" style="width:15%"></div></div>
+            </div>
+            <div class="alloc-right">
+              <div class="alloc-amount">¥1,200</div>
+              <div class="alloc-pct">15%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第二模块：未来目标 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>未来目标</div>
+          <div class="section-more">+ 新目标</div>
+        </div>
+        <div class="goal-list" id="goalList">
+          <div class="goal-card light">
+            <div class="goal-top">
+              <div class="goal-ico">✈️</div>
+              <div style="text-align:right;">
+                <div class="goal-eta">预计 2026.12</div>
+              </div>
+            </div>
+            <div class="goal-name">日本旅行计划</div>
+            <div class="goal-amounts">
+              <span class="goal-current">¥8,200</span>
+              <span class="goal-target">/ ¥15,000</span>
+            </div>
+            <div class="goal-bar-wrap">
+              <div class="goal-bar"><div class="goal-fill" style="width:55%"></div></div>
+              <div class="goal-pct">55%</div>
+            </div>
+          </div>
+
+          <div class="goal-card dark">
+            <div class="goal-top">
+              <div class="goal-ico">💻</div>
+              <div style="text-align:right;">
+                <div class="goal-eta">预计 2026.10</div>
+              </div>
+            </div>
+            <div class="goal-name">新 MacBook</div>
+            <div class="goal-amounts">
+              <span class="goal-current">¥6,500</span>
+              <span class="goal-target">/ ¥14,999</span>
+            </div>
+            <div class="goal-bar-wrap">
+              <div class="goal-bar"><div class="goal-fill" style="width:43%"></div></div>
+              <div class="goal-pct">43%</div>
+            </div>
+          </div>
+
+          <div class="goal-card purple">
+            <div class="goal-top">
+              <div class="goal-ico">🏦</div>
+              <div style="text-align:right;">
+                <div class="goal-eta" style="color:rgba(255,255,255,0.6)">预计 2027.06</div>
+              </div>
+            </div>
+            <div class="goal-name">长期储蓄基金</div>
+            <div class="goal-amounts">
+              <span class="goal-current">¥34,200</span>
+              <span class="goal-target" style="color:rgba(255,255,255,0.55)">/ ¥50,000</span>
+            </div>
+            <div class="goal-bar-wrap">
+              <div class="goal-bar"><div class="goal-fill" style="width:68%"></div></div>
+              <div class="goal-pct">68%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第三模块：消费决策 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>消费决策</div>
+          <div class="section-more">+ 想买的</div>
+        </div>
+        <div class="decide-list">
+          <div class="decide-card yellow-edge">
+            <div class="decide-top">
+              <div class="decide-name">Sony 降噪耳机</div>
+              <div class="decide-price">¥1,899</div>
+            </div>
+            <div class="decide-reason">
+              <span class="label">理由</span>每天通勤 2 小时，降噪对专注和休息都有帮助，可以用很久
+            </div>
+            <div class="decide-foot">
+              <div class="prio-pills">
+                <span class="prio-pill active high">高优先</span>
+                <span class="prio-pill">中</span>
+                <span class="prio-pill">低</span>
+              </div>
+              <div class="decide-action"><span class="dot"></span> 值得入手</div>
+            </div>
+          </div>
+
+          <div class="decide-card purple-edge">
+            <div class="decide-top">
+              <div class="decide-name">机械键盘</div>
+              <div class="decide-price">¥899</div>
+            </div>
+            <div class="decide-reason">
+              <span class="label">理由</span>手感确实好，但当前键盘还能用，可以再等等
+            </div>
+            <div class="decide-foot">
+              <div class="prio-pills">
+                <span class="prio-pill">高</span>
+                <span class="prio-pill active mid">中优先</span>
+                <span class="prio-pill">低</span>
+              </div>
+              <div class="decide-action" style="color:var(--purple)"><span class="dot" style="background:var(--purple)"></span> 观望一下</div>
+            </div>
+          </div>
+
+          <div class="decide-card">
+            <div class="decide-top">
+              <div class="decide-name">限量版手办</div>
+              <div class="decide-price">¥1,200</div>
+            </div>
+            <div class="decide-reason">
+              <span class="label">理由</span>很喜欢，但只是收藏展示，实用价值不高
+            </div>
+            <div class="decide-foot">
+              <div class="prio-pills">
+                <span class="prio-pill">高</span>
+                <span class="prio-pill">中</span>
+                <span class="prio-pill active low">低优先</span>
+              </div>
+              <div class="decide-action" style="color:var(--text-dim)"><span class="dot" style="background:var(--text-dim)"></span> 暂不购买</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第四模块：财务思考 -->
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title"><span class="bar"></span>财务思考</div>
+          <div class="section-more">+ 记录</div>
+        </div>
+        <div class="think-card">
+          <div class="think-head">
+            <span class="think-emoji">💡</span>
+            <span class="think-title">下季度资金调整方向</span>
+            <span class="think-date">8月1日</span>
+          </div>
+          <div class="think-text">
+            自我提升的投入产出比最高，下季度考虑把<span class="hl">娱乐消费压缩到 8%</span>，多出的部分分到学习预算。<span class="hp">储蓄率保持在 15% 以上</span>不动，旅行基金按月定投 1,500，年底前应该能凑齐。
+          </div>
+          <div class="think-tags">
+            <span class="think-tag">#预算调整</span>
+            <span class="think-tag">#长期规划</span>
+            <span class="think-tag">#储蓄</span>
+          </div>
+        </div>
+        <div class="think-add">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          记录一条财务思考
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tabbar">
+      <div class="tab active">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>首页</span>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span>任务</span>
+      </div>
+      <div class="tab-center">
+        <div class="tab-plus">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>记录</span>
+      </div>
+      <div class="tab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>我的</span>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+</div>
+<script src="theme-runtime.js"></script>
+<script src="storage.js"></script>
+<script src="pwa.js"></script>
+<script>
+(function () {
+  'use strict';
+  if (!window.LifeOS) return;
+  var fin = LifeOS.get('finance');
+  if (!fin) return;
+
+  // 资金卡
+  setText('fundAmount', '<span class="cur">¥</span>' + formatNum(fin.available));
+  var savingsPct = fin.savingsTarget ? Math.round(fin.savingsCurrent / fin.savingsTarget * 100) : 0;
+  setText('fundChange', '本月可调配 ¥' + formatNum(fin.budget - fin.budget * fin.budgetUsed / 100) + ' · 储蓄完成 ' + savingsPct + '%');
+  setText('fundBudget', '¥' + formatNum(fin.budget));
+  setText('fundBudgetUsed', '已分配 ' + fin.budgetUsed + '%');
+  setText('fundSavingsTarget', '¥' + formatNum(fin.savingsTarget));
+  setText('fundSavingsCurrent', '已完成 ¥' + formatNum(fin.savingsCurrent));
+
+  // 资金分配列表
+  if (fin.allocations && fin.allocations.length) {
+    var al = document.getElementById('allocList');
+    if (al) {
+      al.innerHTML = fin.allocations.map(function (a) {
+        return '<div class="alloc-card">' +
+          '<div class="alloc-emoji ' + a.color + '">' + a.emoji + '</div>' +
+          '<div class="alloc-body">' +
+            '<div class="alloc-name">' + esc(a.name) + '</div>' +
+            '<div class="alloc-bar"><div class="alloc-fill ' + a.color + '" style="width:' + a.pct + '%"></div></div>' +
+          '</div>' +
+          '<div class="alloc-right">' +
+            '<div class="alloc-amount">¥' + formatNum(a.amount) + '</div>' +
+            '<div class="alloc-pct">' + a.pct + '%</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+
+  // 储蓄目标列表
+  if (fin.goals && fin.goals.length) {
+    var gl = document.getElementById('goalList');
+    if (gl) {
+      gl.innerHTML = fin.goals.map(function (g) {
+        var pct = g.target ? Math.round(g.current / g.target * 100) : 0;
+        var etaStyle = g.cardType === 'purple' ? ' style="color:rgba(255,255,255,0.6)"' : '';
+        var targetStyle = g.cardType === 'purple' ? ' style="color:rgba(255,255,255,0.55)"' : '';
+        return '<div class="goal-card ' + g.cardType + '">' +
+          '<div class="goal-top">' +
+            '<div class="goal-ico">' + g.emoji + '</div>' +
+            '<div>' +
+              '<div class="goal-eta"' + etaStyle + '>预计 ' + esc(g.eta) + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="goal-name">' + esc(g.name) + '</div>' +
+          '<div class="goal-amounts">' +
+            '<span class="goal-current">¥' + formatNum(g.current) + '</span>' +
+            '<span class="goal-target"' + targetStyle + '>/ ¥' + formatNum(g.target) + '</span>' +
+          '</div>' +
+          '<div class="goal-bar-wrap">' +
+            '<div class="goal-bar"><div class="goal-fill" style="width:' + pct + '%"></div></div>' +
+            '<div class="goal-pct">' + pct + '%</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = val;
+  }
+  function formatNum(n) {
+    return (n || 0).toLocaleString('en-US');
+  }
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+})();
+</script>
+</body>
+</html>
