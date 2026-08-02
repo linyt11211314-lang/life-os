@@ -853,14 +853,14 @@
     var pl = document.getElementById('periodList');
     if (pl) {
       var flowMap = { light: { dots: 1, label: '少量', sub: true }, normal: { dots: 2, label: '正常', sub: false }, heavy: { dots: 3, label: '较多', sub: false } };
-      pl.innerHTML = cy.history.map(function (h) {
+      pl.innerHTML = cy.history.map(function (h, i) {
         var fl = flowMap[h.flow] || flowMap.normal;
         var dots = '';
-        for (var i = 0; i < 3; i++) {
-          dots += '<span class="flow-dot' + (i < fl.dots ? ' active' : '') + '"></span>';
+        for (var d = 0; d < 3; d++) {
+          dots += '<span class="flow-dot' + (d < fl.dots ? ' active' : '') + '"></span>';
         }
         var labelStyle = fl.sub ? ' style="color:var(--text-sub)"' : '';
-        return '<div class="period-card ' + (h.cardType || '') + '">' +
+        return '<div class="period-card ' + (h.cardType || '') + '" data-edit="cycle.history#' + i + '">' +
           '<div class="period-ico">🌷</div>' +
           '<div class="period-body">' +
             '<div class="period-dates">' + esc(h.dates) + '</div>' +
@@ -898,5 +898,7 @@
   }
 })();
 </script>
+<script src="app-nav.js"></script>
+<script src="app-detail.js"></script>
 </body>
 </html>

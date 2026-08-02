@@ -758,9 +758,9 @@
   if (pet.timeline && pet.timeline.length) {
     var tl = document.getElementById('petTimeline');
     if (tl) {
-      tl.innerHTML = pet.timeline.map(function (item) {
+      tl.innerHTML = pet.timeline.map(function (item, i) {
         var contentClass = item.img ? 'tl-content has-img' : ('tl-content' + (item.color ? ' ' + item.color : ''));
-        var html = '<div class="tl-item">' +
+        var html = '<div class="tl-item" data-edit="pet.timeline#' + i + '">' +
           '<div class="tl-dot"></div>' +
           '<div class="tl-date">' + esc(item.date) + '</div>';
         if (item.img) {
@@ -794,5 +794,7 @@
   }
 })();
 </script>
+<script src="app-nav.js"></script>
+<script src="app-detail.js"></script>
 </body>
 </html>

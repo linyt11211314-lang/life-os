@@ -756,8 +756,8 @@
   if (fin.allocations && fin.allocations.length) {
     var al = document.getElementById('allocList');
     if (al) {
-      al.innerHTML = fin.allocations.map(function (a) {
-        return '<div class="alloc-card">' +
+      al.innerHTML = fin.allocations.map(function (a, i) {
+        return '<div class="alloc-card" data-edit="finance.allocations#' + i + '">' +
           '<div class="alloc-emoji ' + a.color + '">' + a.emoji + '</div>' +
           '<div class="alloc-body">' +
             '<div class="alloc-name">' + esc(a.name) + '</div>' +
@@ -776,11 +776,11 @@
   if (fin.goals && fin.goals.length) {
     var gl = document.getElementById('goalList');
     if (gl) {
-      gl.innerHTML = fin.goals.map(function (g) {
+      gl.innerHTML = fin.goals.map(function (g, i) {
         var pct = g.target ? Math.round(g.current / g.target * 100) : 0;
         var etaStyle = g.cardType === 'purple' ? ' style="color:rgba(255,255,255,0.6)"' : '';
         var targetStyle = g.cardType === 'purple' ? ' style="color:rgba(255,255,255,0.55)"' : '';
-        return '<div class="goal-card ' + g.cardType + '">' +
+        return '<div class="goal-card ' + g.cardType + '" data-edit="finance.goals#' + i + '">' +
           '<div class="goal-top">' +
             '<div class="goal-ico">' + g.emoji + '</div>' +
             '<div>' +
@@ -816,5 +816,7 @@
   }
 })();
 </script>
+<script src="app-nav.js"></script>
+<script src="app-detail.js"></script>
 </body>
 </html>

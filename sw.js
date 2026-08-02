@@ -5,8 +5,8 @@
    - 文件协议（file://）下自动跳过（SW 需要 HTTPS 或 localhost）
    ============================================================ */
 
-const CACHE_VERSION = 'lifeos-v4';
-const RUNTIME_CACHE = 'lifeos-runtime-v2';
+const CACHE_VERSION = 'lifeos-v6';
+const RUNTIME_CACHE = 'lifeos-runtime-v3';
 
 // 需要预缓存的核心资源
 const PRECACHE_URLS = [
@@ -24,6 +24,8 @@ const PRECACHE_URLS = [
   './manifest.json',
   './storage.js',
   './pwa.js',
+  './app-nav.js',
+  './app-detail.js',
   './theme-inline.js',
   './theme-runtime.js',
   './icons/icon-180.png',
@@ -82,6 +84,32 @@ self.addEventListener('fetch', (event) => {
 
   // file:// 协议下 SW 不会真正拦截，只在 HTTP 下生效
   if (url.protocol === 'file:') {
+    return;
+  }
+
+  // HTML 走「网络优先」：
+  // 旧的 cache-first 会让已安装的 PWA 一直吃到旧页面，
+  // 也会让 SPA 运行时 fetch 到的视图是过期的。静态资源仍保持缓存优先。
+  const isHTML =
+    request.mode === 'navigate' ||
+    request.destination === 'document' ||
+    /\.html?$/i.test(url.pathname) ||
+    url.pathname.endsWith('/');
+
+  if (isHTML) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() =>
+          caches.match(request).then((cached) => cached || caches.match('./index.html'))
+        )
+    );
     return;
   }
 
