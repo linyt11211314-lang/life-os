@@ -15,13 +15,13 @@
   /* ---------- 路由表 ---------- */
   // 纳入 SPA 的视图（app-framework.html 是设计稿总览页，结构特殊，走原生跳转）
   var ROUTES = [
-    'index.html', 'space.html', 'task-center.html', 'companion.html',
+    'index.html', 'space.html', 'companion.html',
     'cycle.html', 'finance.html', 'decide.html', 'inspiration.html', 'profile.html'
   ];
   // 底部 Tab 高亮索引（.tabbar .tab 共 4 个：0 首页 / 1 空间 / 2 记录 / 3 我的）
   var TAB_INDEX = {
     'index.html': 0,
-    'space.html': 1, 'task-center.html': 1, 'companion.html': 1,
+    'space.html': 1, 'companion.html': 1,
     'cycle.html': 1, 'finance.html': 1, 'decide.html': 1, 'inspiration.html': 1,
     'profile.html': 3
   };
@@ -147,7 +147,7 @@
 
         views[file] = {
           content: document.importNode(content, true),
-          // Tab Bar 必须随视图替换：task-center / inspiration 把 id="addBtn" 挂在 .tab-plus 上，
+          // Tab Bar 必须随视图替换：inspiration 把 id="addBtn" 挂在 .tab-plus 上，
           // 沿用宿主页的 Tab Bar 会让这些页面的「+」失联。
           tabbar: document.importNode(bar, true),
           extras: siblingsAfter(ind, true),
