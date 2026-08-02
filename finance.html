@@ -410,6 +410,34 @@
 
 </style>
 <script src="theme-inline.js"></script>
+<script>
+(function(){try{
+  function lifeosSuppress(){
+    var de=document.documentElement;
+    de.classList.remove('lifeos-noentrance');
+    var all=document.querySelectorAll('*'),t=[];
+    for(var i=0;i<all.length;i++){var n=getComputedStyle(all[i]).animationName;if(n&&n!=='none')t.push(all[i]);}
+    de.classList.add('lifeos-noentrance');
+    for(var k=0;k<t.length;k++){t[k].style.animation='none';}
+    var st=document.getElementById('lifeos-suppress');if(st)st.parentNode.removeChild(st);
+    de.classList.remove('lifeos-noentrance');
+  }
+  if(sessionStorage.getItem('lifeos_inapp')){
+    var s=document.createElement('style');s.id='lifeos-suppress';
+    s.textContent='html.lifeos-noentrance *{animation:none!important}';
+    document.head.appendChild(s);
+    document.documentElement.classList.add('lifeos-noentrance');
+    sessionStorage.removeItem('lifeos_inapp');
+    if(document.readyState!=='loading')lifeosSuppress();
+    else document.addEventListener('DOMContentLoaded',lifeosSuppress);
+  }
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    while(t&&t!==document){var o=(t.getAttribute&&t.getAttribute('onclick'))||'';if(/location\.href/.test(o)){try{sessionStorage.setItem('lifeos_inapp','1');}catch(_){}break;}t=t.parentElement;}
+  },true);
+}catch(_){}})();
+</script>
+
   <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
 </head>
 <body>

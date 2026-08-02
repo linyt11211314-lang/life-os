@@ -700,6 +700,34 @@
 
 </style>
 <script src="theme-inline.js"></script>
+<script>
+(function(){try{
+  function lifeosSuppress(){
+    var de=document.documentElement;
+    de.classList.remove('lifeos-noentrance');
+    var all=document.querySelectorAll('*'),t=[];
+    for(var i=0;i<all.length;i++){var n=getComputedStyle(all[i]).animationName;if(n&&n!=='none')t.push(all[i]);}
+    de.classList.add('lifeos-noentrance');
+    for(var k=0;k<t.length;k++){t[k].style.animation='none';}
+    var st=document.getElementById('lifeos-suppress');if(st)st.parentNode.removeChild(st);
+    de.classList.remove('lifeos-noentrance');
+  }
+  if(sessionStorage.getItem('lifeos_inapp')){
+    var s=document.createElement('style');s.id='lifeos-suppress';
+    s.textContent='html.lifeos-noentrance *{animation:none!important}';
+    document.head.appendChild(s);
+    document.documentElement.classList.add('lifeos-noentrance');
+    sessionStorage.removeItem('lifeos_inapp');
+    if(document.readyState!=='loading')lifeosSuppress();
+    else document.addEventListener('DOMContentLoaded',lifeosSuppress);
+  }
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    while(t&&t!==document){var o=(t.getAttribute&&t.getAttribute('onclick'))||'';if(/location\.href/.test(o)){try{sessionStorage.setItem('lifeos_inapp','1');}catch(_){}break;}t=t.parentElement;}
+  },true);
+}catch(_){}})();
+</script>
+
   <link rel="apple-touch-startup-image" href="icons/splash-1242x2688.png">
 </head>
 <body>
@@ -897,30 +925,6 @@
             <div>
               <div class="gtitle">资料库</div>
               <div class="gdesc">128 篇收藏待读</div>
-            </div>
-            <div class="mini">›</div>
-          </div>
-          <!-- 7 习惯追踪 -->
-          <div class="gcard">
-            <div class="corner"></div>
-            <div class="gico">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
-            <div>
-              <div class="gtitle">习惯追踪</div>
-              <div class="gdesc">连续打卡 21 天</div>
-            </div>
-            <div class="mini">›</div>
-          </div>
-          <!-- 8 数据统计 -->
-          <div class="gcard">
-            <div class="corner"></div>
-            <div class="gico">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DFFF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            </div>
-            <div>
-              <div class="gtitle">数据统计</div>
-              <div class="gdesc">本周成长 +12%</div>
             </div>
             <div class="mini">›</div>
           </div>
