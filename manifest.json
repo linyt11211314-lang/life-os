@@ -1,7 +1,7 @@
 {
   "name": "我的生活 OS",
   "short_name": "Life OS",
-  "description": "一个为认真生活的人打造的个人操作系统。管理待办、记录生活、规划财富、追踪周期、记录灵感。",
+  "description": "一个为认真生活的人打造的个人生活 OS。记录生活、规划财富、了解身体、收藏灵感。",
   "lang": "zh-CN",
   "dir": "ltr",
   "start_url": "./index.html",
@@ -10,7 +10,7 @@
   "orientation": "portrait",
   "background_color": "#0E0E0F",
   "theme_color": "#0E0E0F",
-  "categories": ["productivity", "lifestyle", "utilities"],
+  "categories": ["lifestyle", "personalization", "utilities"],
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -45,10 +45,10 @@
   ],
   "shortcuts": [
     {
-      "name": "任务中心",
-      "short_name": "任务",
-      "description": "管理今天要做的事",
-      "url": "./task-center.html",
+      "name": "空间",
+      "short_name": "空间",
+      "description": "收藏生活 · 管理人生",
+      "url": "./space.html",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     },
     {

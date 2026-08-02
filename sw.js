@@ -5,8 +5,8 @@
    - 文件协议（file://）下自动跳过（SW 需要 HTTPS 或 localhost）
    ============================================================ */
 
-const CACHE_VERSION = 'lifeos-v3';
-const RUNTIME_CACHE = 'lifeos-runtime-v1';
+const CACHE_VERSION = 'lifeos-v4';
+const RUNTIME_CACHE = 'lifeos-runtime-v2';
 
 // 需要预缓存的核心资源
 const PRECACHE_URLS = [
@@ -23,7 +23,7 @@ const PRECACHE_URLS = [
   './app-framework.html',
   './manifest.json',
   './storage.js',
-  './theme.js',
+  './pwa.js',
   './theme-inline.js',
   './theme-runtime.js',
   './icons/icon-180.png',
